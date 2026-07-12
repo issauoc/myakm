@@ -142,35 +142,47 @@
               assign car_verified = product.metafields.car_details.verified | default: false
 
               assign _mf = product.metafields.shopify["item-condition"].value
-              if _mf.label != blank
-                assign car_condition = _mf.label
-              elsif _mf.name != blank
-                assign car_condition = _mf.name
-              elsif _mf != blank
-                assign car_condition = _mf | join: ' / '
-              else
+              assign car_condition = ''
+              if _mf.label.value != blank
+                assign car_condition = _mf.label.value
+              elsif _mf.name.value != blank
+                assign car_condition = _mf.name.value
+              elsif _mf.first.label.value != blank
+                assign car_condition = _mf | map: 'label' | map: 'value' | join: ' / '
+              elsif _mf.first.name.value != blank
+                assign car_condition = _mf | map: 'name' | map: 'value' | join: ' / '
+              endif
+              if car_condition == blank
                 assign car_condition = product.metafields.car_details.condition | default: ''
               endif
 
               assign _mf = product.metafields.shopify["transmission-type"].value
-              if _mf.label != blank
-                assign car_transmission = _mf.label
-              elsif _mf.name != blank
-                assign car_transmission = _mf.name
-              elsif _mf != blank
-                assign car_transmission = _mf | join: ' / '
-              else
+              assign car_transmission = ''
+              if _mf.label.value != blank
+                assign car_transmission = _mf.label.value
+              elsif _mf.name.value != blank
+                assign car_transmission = _mf.name.value
+              elsif _mf.first.label.value != blank
+                assign car_transmission = _mf | map: 'label' | map: 'value' | join: ' / '
+              elsif _mf.first.name.value != blank
+                assign car_transmission = _mf | map: 'name' | map: 'value' | join: ' / '
+              endif
+              if car_transmission == blank
                 assign car_transmission = product.metafields.car_details.transmission | default: ''
               endif
 
               assign _mf = product.metafields.shopify["fuel-supply"].value
-              if _mf.label != blank
-                assign car_fuel = _mf.label
-              elsif _mf.name != blank
-                assign car_fuel = _mf.name
-              elsif _mf != blank
-                assign car_fuel = _mf | join: ' / '
-              else
+              assign car_fuel = ''
+              if _mf.label.value != blank
+                assign car_fuel = _mf.label.value
+              elsif _mf.name.value != blank
+                assign car_fuel = _mf.name.value
+              elsif _mf.first.label.value != blank
+                assign car_fuel = _mf | map: 'label' | map: 'value' | join: ' / '
+              elsif _mf.first.name.value != blank
+                assign car_fuel = _mf | map: 'name' | map: 'value' | join: ' / '
+              endif
+              if car_fuel == blank
                 assign car_fuel = product.metafields.car_details.fuel_type | default: ''
               endif
 
@@ -394,6 +406,8 @@
     --akm-uc-hot: #f59e0b;
     --akm-uc-wa: #25d366;
     --akm-uc-call: #2563eb;
+    --akm-uc-price: #1d4ed8;
+    --akm-uc-price-dark: #1e3a8a;
     --akm-uc-verified: #0ea5e9;
     --akm-uc-new: #059669;
     --akm-uc-focus: #2563eb;
@@ -613,7 +627,6 @@
 
   .akm-uc .akm-uc-card__media .akm-uc-badge { position: absolute; top: 12px; right: 12px; z-index: 2; }
   .akm-uc .akm-uc-card__media .akm-uc-badge--discount { right: auto; left: 12px; }
-  .akm-uc .akm-uc-card__media .akm-uc-badge--featured ~ .akm-uc-badge--discount { left: 12px; }
 
   .akm-uc .akm-uc-card__cond {
     position: absolute; bottom: 12px; right: 12px; z-index: 2;
@@ -667,7 +680,17 @@
 
   .akm-uc .akm-uc-card__body { position: relative; padding: 14px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
   .akm-uc .akm-uc-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .akm-uc .akm-uc-price { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .akm-uc .akm-uc-price {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    color: var(--akm-uc-price);
+    background: linear-gradient(135deg, var(--akm-uc-price) 0%, var(--akm-uc-price-dark) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
   .akm-uc .akm-uc-card__title { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.3; color: var(--akm-uc-ink); }
   .akm-uc .akm-uc-card__meta {
     margin: 0; display: flex; align-items: center; gap: 5px;
