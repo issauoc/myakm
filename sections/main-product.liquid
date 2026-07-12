@@ -280,6 +280,7 @@
         <h2 id="akm-pdp-seller-h2-{{ section.id }}">التواصل مع البائع</h2>
         <div class="akm-pdp-seller">
           <div class="akm-pdp-seller__id">
+            <span class="akm-pdp-seller__label">البائع:</span>
             <strong>{{ car_dealer }}</strong>
             {%- if car_verified -%}<span class="akm-pdp-chip akm-pdp-chip--verified">موثّق</span>{%- endif -%}
           </div>
@@ -358,6 +359,9 @@
   .akm-pdp img { display: block; max-width: 100%; height: auto; }
   .akm-pdp a { color: inherit; }
   .akm-pdp :focus-visible { outline: 3px solid var(--akm-pdp-call); outline-offset: 2px; }
+  .akm-pdp a, .akm-pdp button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .akm-pdp-btn:active { transform: scale(.97); }
+  .akm-pdp-related-card:active { transform: scale(.98); }
 
   .akm-pdp-breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 18px; padding: 0; font-size: 13px; color: var(--akm-pdp-ink-mute); }
   .akm-pdp-breadcrumb li:not(:last-child)::after { content: '/'; margin-inline-start: 6px; color: var(--akm-pdp-ink-mute); }
@@ -400,7 +404,8 @@
   .akm-pdp-desc-generated { font-size: 14.5px; color: var(--akm-pdp-ink-soft); background: var(--akm-pdp-line-soft); padding: 14px; border-radius: var(--akm-pdp-radius); }
   .akm-pdp-desc-rich { margin-top: 14px; font-size: 14.5px; color: var(--akm-pdp-ink); }
 
-  .akm-pdp-seller__id { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  .akm-pdp-seller__id { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 16px; }
+  .akm-pdp-seller__label { color: var(--akm-pdp-ink-mute); font-weight: 400; font-size: 14px; }
   .akm-pdp-seller__loc { margin: 4px 0 14px; font-size: 13.5px; color: var(--akm-pdp-ink-soft); }
   .akm-pdp-seller__actions { display: flex; gap: 10px; flex-wrap: wrap; }
   .akm-pdp-btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; min-height: 46px; border-radius: var(--akm-pdp-radius-pill); font-weight: 700; font-size: 14px; text-decoration: none; }
@@ -416,6 +421,16 @@
   .akm-pdp-related-card img { aspect-ratio: 4/3; object-fit: cover; }
   .akm-pdp-related-card__title { padding: 8px 10px 0; font-size: 12.5px; font-weight: 700; color: var(--akm-pdp-ink); }
   .akm-pdp-related-card__price { padding: 2px 10px 10px; font-size: 13px; font-weight: 800; color: var(--akm-pdp-price); }
+
+  @media (max-width: 639px) {
+    .akm-pdp { padding: 14px 12px 48px; }
+    .akm-pdp-seller__actions { flex-direction: column; }
+    .akm-pdp-btn { width: 100%; min-height: 48px; font-size: 15px; }
+    .akm-pdp-table th, .akm-pdp-table td { padding: 11px 4px; font-size: 14px; }
+    .akm-pdp-gallery__item { aspect-ratio: 4/3; }
+    .akm-pdp-title { font-size: clamp(20px, 5.6vw, 24px); }
+    .akm-pdp-price { font-size: 24px; }
+  }
 </style>
 
 {% schema %}

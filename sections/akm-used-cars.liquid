@@ -301,7 +301,7 @@
                   {%- else -%}
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>
                   {%- endif -%}
-                  {{ car_dealer }}
+                  <span class="akm-uc-card__meta-label">البائع:</span> {{ car_dealer }}
                 </p>
 
                 <ul class="akm-uc-specs">
@@ -434,6 +434,15 @@
   .akm-uc img { display: block; max-width: 100%; height: auto; }
   .akm-uc svg { flex-shrink: 0; }
   .akm-uc a { color: inherit; }
+  .akm-uc button, .akm-uc a, .akm-uc input, .akm-uc select {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .akm-uc .akm-uc-card:active { transform: scale(.99); }
+  .akm-uc .akm-uc-btn-primary:active:not(:disabled),
+  .akm-uc .akm-uc-btn-ghost:active,
+  .akm-uc .akm-uc-chip:active,
+  .akm-uc .akm-uc-iconlink:active { transform: scale(.96); }
 
   .akm-uc .akm-uc-sr-only {
     position: absolute;
@@ -702,6 +711,7 @@
     font-size: 12.5px; color: var(--akm-uc-ink-soft); font-weight: 500;
   }
   .akm-uc .akm-uc-card__meta svg { width: 13px; height: 13px; color: var(--akm-uc-accent); }
+  .akm-uc .akm-uc-card__meta-label { color: var(--akm-uc-ink-mute); font-weight: 400; }
 
   .akm-uc .akm-uc-specs {
     list-style: none; margin: 0; padding: 10px; display: grid; grid-template-columns: 1fr 1fr;
@@ -777,6 +787,7 @@
     -webkit-backdrop-filter: blur(10px);
     border-top: 1px solid rgba(255,255,255,.1);
     box-shadow: 0 -8px 24px -8px rgba(0,0,0,.3);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .akm-uc .akm-uc-comparebar[hidden] { display: none; }
   .akm-uc .akm-uc-comparebar__inner {
@@ -875,10 +886,39 @@
   }
 
   @media (max-width: 639px) {
+    .akm-uc .akm-uc-filterbar__inner { padding: 8px 12px; gap: 8px; }
+    .akm-uc .akm-uc-filterbar__search { flex: 1 1 100%; order: 1; }
+    .akm-uc .akm-uc-filterbar__search input { font-size: 16px; }
+    .akm-uc .akm-uc-filterbar__chips {
+      order: 2; flex: 1 1 100%; flex-wrap: nowrap;
+      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      padding-bottom: 2px; margin: 0 -12px; padding-inline: 12px;
+    }
+    .akm-uc .akm-uc-filterbar__chips::-webkit-scrollbar { display: none; }
+    .akm-uc .akm-uc-chip { flex: 0 0 auto; min-height: 44px; }
     .akm-uc .akm-uc-filterbar__sort { order: 3; flex: 1 1 100%; }
-    .akm-uc .akm-uc-filterbar__sort select { width: 100%; }
+    .akm-uc .akm-uc-filterbar__sort select { width: 100%; min-height: 44px; font-size: 16px; }
     .akm-uc .akm-uc-filterbar__count { order: 4; flex: 1 1 100%; text-align: center; margin-inline-start: 0; }
+
+    .akm-uc .akm-uc-fav { width: 44px; height: 44px; }
+    .akm-uc .akm-uc-compare-toggle { min-height: 40px; padding: 8px 14px 8px 10px; }
+    .akm-uc .akm-uc-iconlink { min-height: 46px; }
+    .akm-uc .akm-uc-btn-ghost, .akm-uc .akm-uc-btn-primary { min-height: 46px; }
+
     .akm-uc .akm-uc-comparebar__actions { width: 100%; justify-content: space-between; }
+    .akm-uc .akm-uc-comparebar__list { max-height: 76px; overflow-y: auto; }
+
+    .akm-uc .akm-uc-comparemodal__panel {
+      position: fixed;
+      inset: auto 0 0 0;
+      margin: 0;
+      max-width: none;
+      max-height: 88vh;
+      border-radius: 20px 20px 0 0;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .akm-uc .akm-uc-comparemodal__header { padding: 14px 16px; }
+    .akm-uc .akm-uc-iconbtn { width: 44px; height: 44px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
