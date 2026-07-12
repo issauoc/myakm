@@ -1,0 +1,1273 @@
+{%- comment -%}
+  AKM Used Cars Listing Section
+  Compact marketplace-grade layout: Hero -> sticky filter bar -> car card grid -> compare workflow.
+  Each Shopify product is treated as one used-car listing. Secondary/long-form details
+  (features, drive type, full seller profile, etc.) live on the product page, not the card.
+{%- endcomment -%}
+
+{%- liquid
+  assign uid = section.id
+  assign heading = section.settings.heading | default: 'سيارات مستعملة للبيع في مصر'
+  assign subtitle = section.settings.subtitle | default: 'تصفح سيارات مستعملة معروضة من بائعين موثوقين في مصر، وتواصل مباشرة بدون وسيط أو خطوات شراء إلكترونية.'
+  assign show_verified = section.settings.show_verified_badge
+
+  assign grid_heading = section.settings.grid_heading | default: 'السيارات المتاحة'
+  assign grid_subtitle = section.settings.grid_subtitle | default: 'قارن السيارات وتواصل مع البائع مباشرة بدون وسطاء.'
+  assign show_trust_chips = section.settings.show_trust_chips
+
+  assign collection = collections[section.settings.collection]
+  assign products_per_page = section.settings.products_per_page | default: 12
+
+  assign call_label    = section.settings.call_button_label      | default: 'اتصال'
+  assign wa_label       = section.settings.whatsapp_button_label  | default: 'واتساب'
+  assign compare_label  = section.settings.compare_button_label   | default: 'مقارنة'
+  assign max_compare     = section.settings.max_compare_items      | default: 3
+-%}
+
+<div class="akm-uc" id="akm-uc-{{ uid }}" data-akm-uc data-max-compare="{{ max_compare }}" dir="rtl" lang="ar">
+
+  {%- comment -%} ---------- HERO ---------- {%- endcomment -%}
+  <section class="akm-uc-hero">
+    <div class="akm-uc-hero__bg" aria-hidden="true">
+      <span class="akm-uc-blob akm-uc-blob--1"></span>
+      <span class="akm-uc-blob akm-uc-blob--2"></span>
+      <span class="akm-uc-grid-pattern"></span>
+    </div>
+
+    <div class="akm-uc-container">
+      <div class="akm-uc-hero__inner">
+        <span class="akm-uc-eyebrow">
+          <span class="akm-uc-eyebrow__dot"></span>
+          سيارات مستعملة في مصر
+        </span>
+        <h1 class="akm-uc-hero__title">{{ heading }}</h1>
+        <p class="akm-uc-hero__subtitle">{{ subtitle }}</p>
+
+        <div class="akm-uc-stats" role="list">
+          <div class="akm-uc-stat" role="listitem">
+            <span class="akm-uc-stat__num">{{ section.settings.stat_dealers | default: '120+' }}</span>
+            <span class="akm-uc-stat__label">بائعون موثوقون</span>
+          </div>
+          <div class="akm-uc-stat" role="listitem">
+            <span class="akm-uc-stat__num">{{ collection.products_count | default: 0 }}+</span>
+            <span class="akm-uc-stat__label">سيارة متاحة</span>
+          </div>
+          <div class="akm-uc-stat" role="listitem">
+            <span class="akm-uc-stat__num">100%</span>
+            <span class="akm-uc-stat__label">تواصل مباشر</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {%- if collection != blank -%}
+    {%- comment -%} ---------- STICKY FILTER BAR ---------- {%- endcomment -%}
+    <div class="akm-uc-filterbar" data-akm-uc-filterbar>
+      <div class="akm-uc-container akm-uc-filterbar__inner">
+        <label class="akm-uc-filterbar__search">
+          <span class="akm-uc-sr-only">ابحث عن سيارة</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" data-akm-uc-search placeholder="ابحث بالماركة، الموديل، أو المدينة…" autocomplete="off">
+        </label>
+
+        <div class="akm-uc-filterbar__chips" role="group" aria-label="فلترة حسب الحالة">
+          <button type="button" class="akm-uc-chip is-active" data-akm-uc-condition="all" aria-pressed="true">الكل</button>
+          <button type="button" class="akm-uc-chip" data-akm-uc-condition="new" aria-pressed="false">جديدة</button>
+          <button type="button" class="akm-uc-chip" data-akm-uc-condition="used" aria-pressed="false">مستعملة</button>
+        </div>
+
+        <label class="akm-uc-filterbar__sort">
+          <span class="akm-uc-sr-only">ترتيب حسب</span>
+          <select data-akm-uc-sort>
+            <option value="default">الأحدث</option>
+            <option value="price-asc">السعر: الأقل أولًا</option>
+            <option value="price-desc">السعر: الأعلى أولًا</option>
+            <option value="year-desc">سنة الصنع: الأحدث</option>
+          </select>
+        </label>
+
+        <span class="akm-uc-filterbar__count" data-akm-uc-count aria-live="polite"></span>
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} ---------- LISTINGS ---------- {%- endcomment -%}
+  <section class="akm-uc-listings">
+    <div class="akm-uc-container">
+
+      <header class="akm-uc-grid-head">
+        <h2 class="akm-uc-grid-head__title">{{ grid_heading }}</h2>
+        <p class="akm-uc-grid-head__sub">{{ grid_subtitle }}</p>
+
+        {%- if show_trust_chips -%}
+          <ul class="akm-uc-trust" role="list">
+            <li class="akm-uc-trust__chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              سيارات موثوقة
+            </li>
+            <li class="akm-uc-trust__chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              تواصل مباشر
+            </li>
+            <li class="akm-uc-trust__chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              بدون وسطاء
+            </li>
+          </ul>
+        {%- endif -%}
+      </header>
+
+      {%- if collection == blank -%}
+        <div class="akm-uc-empty akm-uc-empty--visible">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <h3>لم يتم اختيار مجموعة سيارات</h3>
+          <p>اختر مجموعة السيارات من إعدادات القسم لعرض السيارات هنا.</p>
+        </div>
+      {%- else -%}
+
+        <div class="akm-uc-grid" data-akm-uc-grid>
+
+          {%- for product in collection.products limit: products_per_page -%}
+            {%- liquid
+              assign car_brand    = product.metafields.car_details.brand    | default: product.vendor
+              assign car_year     = product.metafields.car_details.year     | default: ''
+              assign car_mileage  = product.metafields.car_details.mileage  | default: ''
+              assign car_location = product.metafields.car_details.location | default: ''
+              assign car_phone    = product.metafields.car_details.phone    | default: ''
+              assign car_whatsapp = product.metafields.car_details.whatsapp | default: car_phone
+              assign car_verified = product.metafields.car_details.verified | default: false
+
+              assign _mf = product.metafields.shopify["item-condition"].value
+              if _mf.label != blank
+                assign car_condition = _mf.label
+              elsif _mf.name != blank
+                assign car_condition = _mf.name
+              elsif _mf != blank
+                assign car_condition = _mf | join: ' / '
+              else
+                assign car_condition = product.metafields.car_details.condition | default: ''
+              endif
+
+              assign _mf = product.metafields.shopify["transmission-type"].value
+              if _mf.label != blank
+                assign car_transmission = _mf.label
+              elsif _mf.name != blank
+                assign car_transmission = _mf.name
+              elsif _mf != blank
+                assign car_transmission = _mf | join: ' / '
+              else
+                assign car_transmission = product.metafields.car_details.transmission | default: ''
+              endif
+
+              assign _mf = product.metafields.shopify["fuel-supply"].value
+              if _mf.label != blank
+                assign car_fuel = _mf.label
+              elsif _mf.name != blank
+                assign car_fuel = _mf.name
+              elsif _mf != blank
+                assign car_fuel = _mf | join: ' / '
+              else
+                assign car_fuel = product.metafields.car_details.fuel_type | default: ''
+              endif
+
+              if product.tags contains 'condition:New'
+                assign car_condition = 'New'
+              elsif product.tags contains 'condition:Used'
+                assign car_condition = 'Used'
+              endif
+
+              if product.tags contains 'verified' or product.tags contains 'Verified' or product.tags contains 'موثّق'
+                assign car_verified = true
+              endif
+
+              for tag in product.tags
+                if tag contains 'brand:'
+                  assign car_brand = tag | remove: 'brand:'
+                  break
+                endif
+              endfor
+
+              assign car_condition_label = car_condition
+              if car_condition == 'New'
+                assign car_condition_label = 'جديدة'
+              elsif car_condition == 'Used'
+                assign car_condition_label = 'مستعملة'
+              endif
+
+              assign search_string = car_brand | append: ' ' | append: product.title | append: ' ' | append: car_year | append: ' ' | append: car_location | append: ' ' | append: product.vendor | downcase
+
+              assign car_price = product.price | money_without_trailing_zeros | remove: '.00'
+
+              assign wa_number = car_whatsapp | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+              assign wa_message_text = 'مرحبًا، شاهدت إعلان ' | append: product.title | append: ' بسعر ' | append: car_price | append: ' وأريد الاستفسار عن تفاصيل السيارة والمعاينة. هل متاحة؟ - ' | append: shop.url | append: product.url
+              assign wa_message = wa_message_text | url_encode
+
+              assign card_created = product.created_at | date: '%s'
+            -%}
+
+            <article class="akm-uc-card"
+              data-akm-uc-card
+              data-search="{{ search_string }}"
+              data-condition="{{ car_condition | downcase }}"
+              data-price="{{ product.price }}"
+              data-year="{{ car_year | default: 0 }}"
+              data-created="{{ card_created }}">
+
+              <div class="akm-uc-card__media">
+                {%- if product.tags contains 'hot' or product.tags contains 'Hot' -%}
+                  <span class="akm-uc-badge akm-uc-badge--hot">عرض مميز</span>
+                {%- elsif product.tags contains 'featured' or product.tags contains 'Featured' -%}
+                  <span class="akm-uc-badge akm-uc-badge--featured">مميز</span>
+                {%- endif -%}
+
+                {%- if product.compare_at_price > product.price -%}
+                  {%- assign discount_percent = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+                  <span class="akm-uc-badge akm-uc-badge--discount">-{{ discount_percent }}%</span>
+                {%- endif -%}
+
+                {%- if product.featured_image -%}
+                  <img class="akm-uc-card__img"
+                       src="{{ product.featured_image | image_url: width: 700 }}"
+                       alt="{{ product.title | escape }}"
+                       width="700"
+                       height="525"
+                       loading="lazy">
+                {%- else -%}
+                  <div class="akm-uc-card__img akm-uc-card__img--placeholder" role="img" aria-label="{{ product.title | escape }}">
+                    <span>لا توجد صورة</span>
+                  </div>
+                {%- endif -%}
+
+                <button type="button" class="akm-uc-fav" data-akm-uc-fav aria-pressed="false" aria-label="حفظ {{ product.title | escape }} في المفضلة">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+
+                <button type="button"
+                  class="akm-uc-compare-toggle"
+                  data-akm-uc-compare
+                  aria-pressed="false"
+                  data-id="{{ product.id }}"
+                  data-title="{{ product.title | escape }}"
+                  data-image="{{ product.featured_image | image_url: width: 200 }}"
+                  data-price="{{ car_price }} ج.م"
+                  data-year="{{ car_year | default: '—' }}"
+                  data-mileage="{{ car_mileage | default: '—' }}"
+                  data-transmission="{{ car_transmission | default: '—' }}"
+                  data-fuel="{{ car_fuel | default: '—' }}"
+                  data-url="{{ product.url }}">
+                  <span class="akm-uc-compare-toggle__box" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                  </span>
+                  <span>{{ compare_label }}</span>
+                </button>
+
+                {%- if car_condition != blank -%}
+                  <span class="akm-uc-card__cond akm-uc-card__cond--{{ car_condition | downcase }}">{{ car_condition_label }}</span>
+                {%- endif -%}
+              </div>
+
+              <div class="akm-uc-card__body">
+                <div class="akm-uc-card__head">
+                  <span class="akm-uc-price">{{ car_price }} ج.م</span>
+                  {%- if car_verified and show_verified -%}
+                    <span class="akm-uc-badge akm-uc-badge--verified">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.39 2.43 3.4-.34.82 3.33 3.04 1.6-1.18 3.22 1.18 3.22-3.04 1.6-.82 3.33-3.4-.34L12 22l-2.39-2.43-3.4.34-.82-3.33-3.04-1.6 1.18-3.22L2.35 8.54l3.04-1.6.82-3.33 3.4.34L12 2zm-1.1 14.1l6.4-6.4-1.4-1.4-5 5-2.5-2.5-1.4 1.4 3.9 3.9z"/></svg>
+                      موثّق
+                    </span>
+                  {%- endif -%}
+                </div>
+
+                <h3 class="akm-uc-card__title">{{ product.title }}</h3>
+                <p class="akm-uc-card__meta">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {%- if car_location != blank -%}{{ car_location }}{%- else -%}{{ product.vendor }}{%- endif -%}
+                </p>
+
+                <ul class="akm-uc-specs">
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>{{ car_year | default: '—' }}</span>
+                  </li>
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 17l-8-5-8 5"/><path d="M4 7h16v10H4z"/></svg>
+                    <span>{{ car_mileage | default: '—' }}</span>
+                  </li>
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>{{ car_transmission | default: '—' }}</span>
+                  </li>
+                  <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h12V2H3v20zM15 8l4 2v9a2 2 0 0 1-4 0"/></svg>
+                    <span>{{ car_fuel | default: '—' }}</span>
+                  </li>
+                </ul>
+
+                {%- if car_whatsapp != blank or car_phone != blank -%}
+                  <div class="akm-uc-card__quick">
+                    {%- if car_whatsapp != blank -%}
+                      <a class="akm-uc-iconlink akm-uc-iconlink--wa" href="https://wa.me/{{ wa_number }}?text={{ wa_message }}" target="_blank" rel="noopener" aria-label="{{ wa_label }} بخصوص {{ product.title | escape }}">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1c-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>
+                        <span>{{ wa_label }}</span>
+                      </a>
+                    {%- endif -%}
+                    {%- if car_phone != blank -%}
+                      <a class="akm-uc-iconlink akm-uc-iconlink--call" href="tel:{{ car_phone }}" aria-label="{{ call_label }} بخصوص {{ product.title | escape }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <span>{{ call_label }}</span>
+                      </a>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+
+                <span class="akm-uc-card__hint" aria-hidden="true">
+                  عرض تفاصيل السيارة
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </span>
+              </div>
+
+              <a class="akm-uc-card__link" href="{{ product.url }}" aria-label="{{ product.title | escape }} - عرض تفاصيل السيارة، السعر {{ car_price }} جنيه"></a>
+            </article>
+          {%- endfor -%}
+
+          {%- if collection.products.size == 0 -%}
+            <div class="akm-uc-empty akm-uc-empty--grid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <h3>لا توجد سيارات في هذه المجموعة حاليًا</h3>
+              <p>أضف منتجات إلى مجموعة "{{ collection.title }}" لعرضها هنا.</p>
+            </div>
+          {%- endif -%}
+        </div>
+
+        <div class="akm-uc-empty" data-akm-uc-empty hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <h3>لا توجد سيارات مطابقة لبحثك</h3>
+          <p>جرّب تغيير كلمة البحث أو الفلاتر.</p>
+          <button type="button" class="akm-uc-btn-ghost" data-akm-uc-reset>إعادة ضبط الفلاتر</button>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+
+  {%- comment -%} ---------- COMPARE BAR ---------- {%- endcomment -%}
+  <div class="akm-uc-comparebar" data-akm-uc-comparebar hidden>
+    <div class="akm-uc-container akm-uc-comparebar__inner">
+      <div class="akm-uc-comparebar__list" data-akm-uc-comparebar-list role="list" aria-label="السيارات المختارة للمقارنة"></div>
+      <div class="akm-uc-comparebar__actions">
+        <button type="button" class="akm-uc-btn-ghost" data-akm-uc-comparebar-clear>مسح الكل</button>
+        <button type="button" class="akm-uc-btn-primary" data-akm-uc-comparebar-open disabled>
+          قارن الآن <span data-akm-uc-comparebar-count>(0)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} ---------- COMPARE MODAL ---------- {%- endcomment -%}
+  <div class="akm-uc-comparemodal" data-akm-uc-comparemodal hidden role="dialog" aria-modal="true" aria-labelledby="akm-uc-comparemodal-title-{{ uid }}">
+    <div class="akm-uc-comparemodal__backdrop" data-akm-uc-comparemodal-close></div>
+    <div class="akm-uc-comparemodal__panel" role="document">
+      <div class="akm-uc-comparemodal__header">
+        <h2 id="akm-uc-comparemodal-title-{{ uid }}">مقارنة السيارات</h2>
+        <button type="button" class="akm-uc-iconbtn" data-akm-uc-comparemodal-close aria-label="إغلاق نافذة المقارنة">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="akm-uc-comparemodal__body" data-akm-uc-comparemodal-body></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .akm-uc {
+    --akm-uc-bg: #f8fafc;
+    --akm-uc-surface: #ffffff;
+    --akm-uc-ink: #0f172a;
+    --akm-uc-ink-soft: #475569;
+    --akm-uc-ink-mute: #94a3b8;
+    --akm-uc-line: #e2e8f0;
+    --akm-uc-line-soft: #f1f5f9;
+    --akm-uc-accent: #e11d48;
+    --akm-uc-accent-dark: #be123c;
+    --akm-uc-hot: #f59e0b;
+    --akm-uc-wa: #25d366;
+    --akm-uc-call: #2563eb;
+    --akm-uc-verified: #0ea5e9;
+    --akm-uc-new: #059669;
+    --akm-uc-focus: #2563eb;
+    --akm-uc-shadow: 0 4px 12px rgba(15, 23, 42, .06), 0 2px 4px rgba(15, 23, 42, .04);
+    --akm-uc-shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, .18), 0 8px 16px -8px rgba(15, 23, 42, .1);
+    --akm-uc-radius: 14px;
+    --akm-uc-radius-lg: 18px;
+    --akm-uc-radius-pill: 999px;
+
+    font-family: inherit;
+    color: var(--akm-uc-ink);
+    background: var(--akm-uc-bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .akm-uc *, .akm-uc *::before, .akm-uc *::after { box-sizing: border-box; }
+  .akm-uc button { font-family: inherit; }
+  .akm-uc img { display: block; max-width: 100%; height: auto; }
+  .akm-uc svg { flex-shrink: 0; }
+  .akm-uc a { color: inherit; }
+
+  .akm-uc .akm-uc-sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .akm-uc :focus-visible {
+    outline: 3px solid var(--akm-uc-focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .akm-uc .akm-uc-container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  /* ---------- HERO ---------- */
+  .akm-uc .akm-uc-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: #fff;
+    padding: 48px 0 44px;
+  }
+  .akm-uc .akm-uc-hero__bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .akm-uc .akm-uc-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .35; }
+  .akm-uc .akm-uc-blob--1 { width: 480px; height: 480px; background: radial-gradient(circle, #e11d48, transparent 70%); top: -120px; right: -80px; }
+  .akm-uc .akm-uc-blob--2 { width: 420px; height: 420px; background: radial-gradient(circle, #2563eb, transparent 70%); bottom: -160px; left: -100px; }
+  .akm-uc .akm-uc-grid-pattern {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+  .akm-uc .akm-uc-hero__inner { position: relative; max-width: 760px; margin: 0 auto; text-align: center; }
+  .akm-uc .akm-uc-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: var(--akm-uc-radius-pill);
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+    color: #e2e8f0; font-size: 13px; font-weight: 500;
+  }
+  .akm-uc .akm-uc-eyebrow__dot { width: 6px; height: 6px; border-radius: 50%; background: #e11d48; box-shadow: 0 0 0 4px rgba(225,29,72,.25); }
+  .akm-uc .akm-uc-hero__title {
+    margin: 18px 0 12px;
+    font-size: clamp(24px, 4.6vw, 44px);
+    font-weight: 800; line-height: 1.15; letter-spacing: -0.02em;
+    background: linear-gradient(180deg, #fff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .akm-uc .akm-uc-hero__subtitle { margin: 0 auto 24px; max-width: 620px; color: #cbd5e1; font-size: clamp(14px, 1.6vw, 17px); line-height: 1.6; }
+  .akm-uc .akm-uc-stats { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .akm-uc .akm-uc-stat { display: flex; flex-direction: column; align-items: center; padding: 10px 18px; min-width: 100px; }
+  .akm-uc .akm-uc-stat__num { font-size: clamp(18px, 2.6vw, 24px); font-weight: 700; color: #fff; letter-spacing: -.01em; }
+  .akm-uc .akm-uc-stat__label { margin-top: 4px; font-size: 12px; color: #94a3b8; }
+
+  /* ---------- STICKY FILTER BAR ---------- */
+  .akm-uc .akm-uc-filterbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--akm-uc-line);
+    box-shadow: 0 1px 0 rgba(15,23,42,.03);
+  }
+  .akm-uc .akm-uc-filterbar__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+  .akm-uc .akm-uc-filterbar__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 220px;
+    min-width: 160px;
+    background: var(--akm-uc-line-soft);
+    border: 1px solid var(--akm-uc-line);
+    border-radius: var(--akm-uc-radius-pill);
+    padding: 9px 14px;
+  }
+  .akm-uc .akm-uc-filterbar__search:focus-within { border-color: var(--akm-uc-focus); background: #fff; }
+  .akm-uc .akm-uc-filterbar__search svg { width: 17px; height: 17px; color: var(--akm-uc-ink-mute); }
+  .akm-uc .akm-uc-filterbar__search input {
+    flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+    font-size: 14px; color: var(--akm-uc-ink); height: 22px;
+  }
+  .akm-uc .akm-uc-filterbar__search input::placeholder { color: var(--akm-uc-ink-mute); }
+
+  .akm-uc .akm-uc-filterbar__chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .akm-uc .akm-uc-chip {
+    appearance: none;
+    border: 1px solid var(--akm-uc-line);
+    background: #fff;
+    color: var(--akm-uc-ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    min-height: 40px;
+    border-radius: var(--akm-uc-radius-pill);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .akm-uc .akm-uc-chip:hover { border-color: var(--akm-uc-ink-mute); }
+  .akm-uc .akm-uc-chip.is-active { background: var(--akm-uc-ink); border-color: var(--akm-uc-ink); color: #fff; }
+
+  .akm-uc .akm-uc-filterbar__sort select {
+    appearance: none;
+    border: 1px solid var(--akm-uc-line);
+    background: #fff;
+    color: var(--akm-uc-ink);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 34px 9px 14px;
+    min-height: 40px;
+    border-radius: var(--akm-uc-radius-pill);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+  }
+
+  .akm-uc .akm-uc-filterbar__count {
+    margin-inline-start: auto;
+    font-size: 12.5px;
+    color: var(--akm-uc-ink-mute);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ---------- BADGES ---------- */
+  .akm-uc .akm-uc-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: var(--akm-uc-radius-pill);
+    font-size: 11.5px; font-weight: 700; letter-spacing: .01em; line-height: 1; white-space: nowrap;
+  }
+  .akm-uc .akm-uc-badge svg { width: 12px; height: 12px; }
+  .akm-uc .akm-uc-badge--verified { background: rgba(14,165,233,.1); color: var(--akm-uc-verified); }
+  .akm-uc .akm-uc-badge--hot { background: linear-gradient(135deg, #f59e0b, #dc2626); color: #fff; }
+  .akm-uc .akm-uc-badge--featured { background: var(--akm-uc-ink); color: #fff; }
+  .akm-uc .akm-uc-badge--discount { background: linear-gradient(135deg, #059669, #047857); color: #fff; }
+
+  /* ---------- LISTINGS ---------- */
+  .akm-uc .akm-uc-listings { padding: 32px 0 96px; }
+
+  .akm-uc .akm-uc-grid-head { text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--akm-uc-line); }
+  .akm-uc .akm-uc-grid-head__title { margin: 0 0 8px; font-size: clamp(20px, 3vw, 28px); font-weight: 800; letter-spacing: -.02em; }
+  .akm-uc .akm-uc-grid-head__sub { margin: 0 auto; max-width: 560px; font-size: clamp(13px, 1.6vw, 15px); color: var(--akm-uc-ink-soft); line-height: 1.6; }
+  .akm-uc .akm-uc-trust { list-style: none; margin: 16px 0 0; padding: 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+  .akm-uc .akm-uc-trust__chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--akm-uc-radius-pill); background: var(--akm-uc-surface); border: 1px solid var(--akm-uc-line); color: var(--akm-uc-ink-soft); font-size: 12.5px; font-weight: 600; }
+  .akm-uc .akm-uc-trust__chip svg { width: 14px; height: 14px; color: var(--akm-uc-accent); }
+
+  .akm-uc .akm-uc-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+  /* ---------- CARD ---------- */
+  .akm-uc .akm-uc-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--akm-uc-surface);
+    border: 1px solid var(--akm-uc-line);
+    border-radius: var(--akm-uc-radius-lg);
+    overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .akm-uc .akm-uc-card:hover { transform: translateY(-3px); box-shadow: var(--akm-uc-shadow-lg); border-color: transparent; }
+  .akm-uc .akm-uc-card.is-hidden { display: none; }
+  .akm-uc .akm-uc-card.is-comparing { outline: 2px solid var(--akm-uc-focus); outline-offset: -2px; }
+
+  .akm-uc .akm-uc-card__link {
+    position: absolute; inset: 0; z-index: 1;
+    border-radius: inherit;
+  }
+  .akm-uc .akm-uc-card__link:focus-visible { outline-offset: -3px; }
+
+  .akm-uc .akm-uc-card__media { position: relative; aspect-ratio: 4 / 3; background: #f1f5f9; overflow: hidden; }
+  .akm-uc .akm-uc-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+  .akm-uc .akm-uc-card:hover .akm-uc-card__img { transform: scale(1.05); }
+  .akm-uc .akm-uc-card__img--placeholder {
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: var(--akm-uc-ink-mute); font-size: 13px; font-weight: 600;
+  }
+
+  .akm-uc .akm-uc-card__media .akm-uc-badge { position: absolute; top: 12px; right: 12px; z-index: 2; }
+  .akm-uc .akm-uc-card__media .akm-uc-badge--discount { right: auto; left: 12px; }
+  .akm-uc .akm-uc-card__media .akm-uc-badge--featured ~ .akm-uc-badge--discount { left: 12px; }
+
+  .akm-uc .akm-uc-card__cond {
+    position: absolute; bottom: 12px; right: 12px; z-index: 2;
+    display: inline-flex; padding: 4px 10px; border-radius: var(--akm-uc-radius-pill);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    background: rgba(255,255,255,.95); backdrop-filter: blur(4px);
+  }
+  .akm-uc .akm-uc-card__cond--new { color: var(--akm-uc-new); }
+  .akm-uc .akm-uc-card__cond--used { color: #b45309; }
+
+  .akm-uc .akm-uc-fav {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    width: 40px; height: 40px; border-radius: 50%; border: 0;
+    background: rgba(255,255,255,.95);
+    color: var(--akm-uc-ink-soft);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all .15s ease;
+    box-shadow: 0 4px 12px -2px rgba(0,0,0,.15);
+  }
+  .akm-uc .akm-uc-fav svg { width: 18px; height: 18px; }
+  .akm-uc .akm-uc-fav:hover { transform: scale(1.08); }
+  .akm-uc .akm-uc-fav[aria-pressed="true"] { color: var(--akm-uc-accent); }
+  .akm-uc .akm-uc-fav[aria-pressed="true"] svg { fill: var(--akm-uc-accent); stroke: var(--akm-uc-accent); }
+
+  .akm-uc .akm-uc-compare-toggle {
+    position: absolute; bottom: 10px; left: 10px; z-index: 2;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px 7px 8px;
+    min-height: 36px;
+    border-radius: var(--akm-uc-radius-pill);
+    border: 1px solid rgba(255,255,255,.5);
+    background: rgba(15,23,42,.72);
+    color: #fff;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: all .15s ease;
+  }
+  .akm-uc .akm-uc-compare-toggle:hover { background: rgba(15,23,42,.88); }
+  .akm-uc .akm-uc-compare-toggle__box {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .akm-uc .akm-uc-compare-toggle__box svg { width: 11px; height: 11px; opacity: 0; transition: opacity .1s ease; }
+  .akm-uc .akm-uc-compare-toggle[aria-pressed="true"] { background: var(--akm-uc-focus); border-color: var(--akm-uc-focus); }
+  .akm-uc .akm-uc-compare-toggle[aria-pressed="true"] .akm-uc-compare-toggle__box { background: #fff; color: var(--akm-uc-focus); }
+  .akm-uc .akm-uc-compare-toggle[aria-pressed="true"] .akm-uc-compare-toggle__box svg { opacity: 1; }
+
+  .akm-uc .akm-uc-card__body { position: relative; padding: 14px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+  .akm-uc .akm-uc-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .akm-uc .akm-uc-price { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .akm-uc .akm-uc-card__title { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.3; color: var(--akm-uc-ink); }
+  .akm-uc .akm-uc-card__meta {
+    margin: 0; display: flex; align-items: center; gap: 5px;
+    font-size: 12.5px; color: var(--akm-uc-ink-soft); font-weight: 500;
+  }
+  .akm-uc .akm-uc-card__meta svg { width: 13px; height: 13px; color: var(--akm-uc-accent); }
+
+  .akm-uc .akm-uc-specs {
+    list-style: none; margin: 0; padding: 10px; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; background: var(--akm-uc-line-soft); border-radius: 10px;
+  }
+  .akm-uc .akm-uc-specs li { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--akm-uc-ink); font-weight: 600; min-width: 0; }
+  .akm-uc .akm-uc-specs li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .akm-uc .akm-uc-specs svg { width: 15px; height: 15px; color: var(--akm-uc-ink-mute); flex-shrink: 0; }
+
+  .akm-uc .akm-uc-card__quick { position: relative; z-index: 2; display: flex; gap: 8px; }
+  .akm-uc .akm-uc-iconlink {
+    flex: 1;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px; min-height: 42px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    text-decoration: none;
+    transition: all .15s ease;
+  }
+  .akm-uc .akm-uc-iconlink svg { width: 16px; height: 16px; }
+  .akm-uc .akm-uc-iconlink--wa { background: rgba(37,211,102,.12); color: #128c4e; }
+  .akm-uc .akm-uc-iconlink--wa:hover { background: var(--akm-uc-wa); color: #fff; }
+  .akm-uc .akm-uc-iconlink--call { background: rgba(37,99,235,.1); color: var(--akm-uc-call); }
+  .akm-uc .akm-uc-iconlink--call:hover { background: var(--akm-uc-call); color: #fff; }
+
+  .akm-uc .akm-uc-card__hint {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--akm-uc-ink-mute);
+  }
+  .akm-uc .akm-uc-card__hint svg { width: 14px; height: 14px; transition: transform .2s ease; }
+  .akm-uc .akm-uc-card:hover .akm-uc-card__hint { color: var(--akm-uc-accent); }
+  .akm-uc .akm-uc-card:hover .akm-uc-card__hint svg { transform: translateX(-3px); }
+  [dir="rtl"] .akm-uc .akm-uc-card:hover .akm-uc-card__hint svg { transform: translateX(3px); }
+
+  /* ---------- EMPTY STATE ---------- */
+  .akm-uc .akm-uc-empty--visible { display: block; }
+  .akm-uc .akm-uc-empty--grid { grid-column: 1 / -1; display: block; }
+  .akm-uc .akm-uc-empty { text-align: center; padding: 56px 20px; color: var(--akm-uc-ink-soft); }
+  .akm-uc .akm-uc-empty svg { width: 52px; height: 52px; color: var(--akm-uc-ink-mute); margin-bottom: 12px; }
+  .akm-uc .akm-uc-empty h3 { margin: 0 0 6px; font-size: 17px; color: var(--akm-uc-ink); }
+  .akm-uc .akm-uc-empty p { margin: 0 0 16px; font-size: 14px; }
+
+  .akm-uc .akm-uc-btn-ghost {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 10px 18px; min-height: 42px;
+    border-radius: var(--akm-uc-radius-pill);
+    border: 1px solid var(--akm-uc-line);
+    background: #fff; color: var(--akm-uc-ink);
+    font-size: 13.5px; font-weight: 700; cursor: pointer;
+    transition: all .15s ease;
+  }
+  .akm-uc .akm-uc-btn-ghost:hover { border-color: var(--akm-uc-ink-mute); background: var(--akm-uc-line-soft); }
+
+  .akm-uc .akm-uc-btn-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 20px; min-height: 42px;
+    border-radius: var(--akm-uc-radius-pill);
+    border: 0; background: var(--akm-uc-accent); color: #fff;
+    font-size: 13.5px; font-weight: 700; cursor: pointer;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+  .akm-uc .akm-uc-btn-primary:hover:not(:disabled) { background: var(--akm-uc-accent-dark); }
+  .akm-uc .akm-uc-btn-primary:disabled { background: var(--akm-uc-ink-mute); cursor: not-allowed; opacity: .6; }
+
+  /* ---------- COMPARE BAR ---------- */
+  .akm-uc .akm-uc-comparebar {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    background: rgba(15, 23, 42, .96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,.3);
+  }
+  .akm-uc .akm-uc-comparebar[hidden] { display: none; }
+  .akm-uc .akm-uc-comparebar__inner {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+  .akm-uc .akm-uc-comparebar__list { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; min-width: 200px; }
+  .akm-uc .akm-uc-comparebar__item {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    padding: 5px 8px 5px 5px;
+  }
+  .akm-uc .akm-uc-comparebar__item img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; }
+  .akm-uc .akm-uc-comparebar__item span {
+    color: #fff; font-size: 12.5px; font-weight: 600; max-width: 130px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .akm-uc .akm-uc-comparebar__item button {
+    width: 22px; height: 22px; border-radius: 50%; border: 0;
+    background: rgba(255,255,255,.16); color: #fff; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .akm-uc .akm-uc-comparebar__item button:hover { background: var(--akm-uc-accent); }
+  .akm-uc .akm-uc-comparebar__item button svg { width: 11px; height: 11px; }
+  .akm-uc .akm-uc-comparebar__actions { display: flex; align-items: center; gap: 8px; }
+  .akm-uc .akm-uc-comparebar .akm-uc-btn-ghost { background: transparent; border-color: rgba(255,255,255,.2); color: #fff; }
+  .akm-uc .akm-uc-comparebar .akm-uc-btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+  /* ---------- COMPARE MODAL ---------- */
+  .akm-uc .akm-uc-comparemodal { position: fixed; inset: 0; z-index: 50; }
+  .akm-uc .akm-uc-comparemodal[hidden] { display: none; }
+  .akm-uc .akm-uc-comparemodal__backdrop { position: absolute; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(2px); border: 0; cursor: pointer; }
+  .akm-uc .akm-uc-comparemodal__panel {
+    position: relative;
+    max-width: 960px;
+    margin: 40px auto;
+    max-height: calc(100vh - 80px);
+    background: #fff;
+    border-radius: var(--akm-uc-radius-lg);
+    box-shadow: var(--akm-uc-shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .akm-uc .akm-uc-comparemodal__header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--akm-uc-line);
+  }
+  .akm-uc .akm-uc-comparemodal__header h2 { margin: 0; font-size: 18px; font-weight: 800; }
+  .akm-uc .akm-uc-iconbtn {
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--akm-uc-line);
+    background: #fff; color: var(--akm-uc-ink-soft); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .akm-uc .akm-uc-iconbtn:hover { background: var(--akm-uc-line-soft); }
+  .akm-uc .akm-uc-iconbtn svg { width: 18px; height: 18px; }
+  .akm-uc .akm-uc-comparemodal__body { padding: 16px 18px 20px; overflow: auto; }
+
+  .akm-uc .akm-uc-comparetable { width: 100%; border-collapse: collapse; min-width: 480px; }
+  .akm-uc .akm-uc-comparetable th, .akm-uc .akm-uc-comparetable td {
+    padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--akm-uc-line-soft); vertical-align: middle;
+  }
+  .akm-uc .akm-uc-comparetable th:first-child, .akm-uc .akm-uc-comparetable td:first-child {
+    text-align: right; color: var(--akm-uc-ink-mute); font-size: 12.5px; font-weight: 700; white-space: nowrap;
+  }
+  .akm-uc .akm-uc-comparetable img { width: 100%; max-width: 140px; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; margin: 0 auto; }
+  .akm-uc .akm-uc-comparetable .akm-uc-compare-title { font-size: 13.5px; font-weight: 700; margin-top: 8px; display: block; }
+  .akm-uc .akm-uc-comparetable .akm-uc-compare-price { font-size: 15px; font-weight: 800; color: var(--akm-uc-accent); }
+  .akm-uc .akm-uc-comparetable .akm-uc-compare-remove {
+    margin-top: 8px; border: 1px solid var(--akm-uc-line); background: #fff; color: var(--akm-uc-ink-soft);
+    font-size: 11.5px; font-weight: 700; padding: 5px 10px; border-radius: var(--akm-uc-radius-pill); cursor: pointer;
+  }
+  .akm-uc .akm-uc-comparetable .akm-uc-compare-remove:hover { border-color: var(--akm-uc-accent); color: var(--akm-uc-accent); }
+  .akm-uc .akm-uc-comparetable .akm-uc-compare-view {
+    display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--akm-uc-call); text-decoration: underline;
+  }
+  .akm-uc .akm-uc-compareempty { text-align: center; padding: 30px; color: var(--akm-uc-ink-soft); font-size: 14px; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (min-width: 640px) {
+    .akm-uc .akm-uc-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  }
+  @media (min-width: 768px) {
+    .akm-uc .akm-uc-container { padding: 0 32px; }
+    .akm-uc .akm-uc-hero { padding: 64px 0 56px; }
+    .akm-uc .akm-uc-listings { padding: 40px 0 110px; }
+    .akm-uc .akm-uc-filterbar__inner { flex-wrap: nowrap; }
+  }
+  @media (min-width: 1024px) {
+    .akm-uc .akm-uc-grid { grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  }
+  @media (min-width: 1280px) {
+    .akm-uc .akm-uc-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  @media (max-width: 639px) {
+    .akm-uc .akm-uc-filterbar__sort { order: 3; flex: 1 1 100%; }
+    .akm-uc .akm-uc-filterbar__sort select { width: 100%; }
+    .akm-uc .akm-uc-filterbar__count { order: 4; flex: 1 1 100%; text-align: center; margin-inline-start: 0; }
+    .akm-uc .akm-uc-comparebar__actions { width: 100%; justify-content: space-between; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akm-uc * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+</style>
+
+<script>
+  (function () {
+    'use strict';
+    var root = document.getElementById('akm-uc-{{ uid }}');
+    if (!root || root.dataset.akmUcInit === '1') return;
+    root.dataset.akmUcInit = '1';
+
+    var cards = Array.prototype.slice.call(root.querySelectorAll('[data-akm-uc-card]'));
+    var grid = root.querySelector('[data-akm-uc-grid]');
+    var emptyEl = root.querySelector('[data-akm-uc-empty]');
+    var searchInput = root.querySelector('[data-akm-uc-search]');
+    var sortSelect = root.querySelector('[data-akm-uc-sort]');
+    var conditionChips = Array.prototype.slice.call(root.querySelectorAll('[data-akm-uc-condition]'));
+    var countEl = root.querySelector('[data-akm-uc-count]');
+    var resetBtn = root.querySelector('[data-akm-uc-reset]');
+    var maxCompare = parseInt(root.dataset.maxCompare, 10) || 3;
+
+    var state = { search: '', condition: 'all', sort: 'default' };
+
+    function applyFilters() {
+      var s = state.search.trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function (card) {
+        var matchesSearch = !s || (card.dataset.search || '').toLowerCase().indexOf(s) !== -1;
+        var matchesCondition = state.condition === 'all' || card.dataset.condition === state.condition;
+        var match = matchesSearch && matchesCondition;
+        card.classList.toggle('is-hidden', !match);
+        if (match) visible++;
+      });
+
+      if (grid && emptyEl) {
+        var noResults = visible === 0 && cards.length > 0;
+        emptyEl.hidden = !noResults;
+        grid.style.display = noResults ? 'none' : '';
+      }
+      if (countEl) countEl.textContent = visible + ' سيارة';
+    }
+
+    function applySort() {
+      var sorted = cards.slice();
+      if (state.sort === 'price-asc') {
+        sorted.sort(function (a, b) { return (+a.dataset.price || 0) - (+b.dataset.price || 0); });
+      } else if (state.sort === 'price-desc') {
+        sorted.sort(function (a, b) { return (+b.dataset.price || 0) - (+a.dataset.price || 0); });
+      } else if (state.sort === 'year-desc') {
+        sorted.sort(function (a, b) { return (+b.dataset.year || 0) - (+a.dataset.year || 0); });
+      } else {
+        sorted.sort(function (a, b) { return (+b.dataset.created || 0) - (+a.dataset.created || 0); });
+      }
+      sorted.forEach(function (card, i) { card.style.order = i; });
+    }
+
+    var debounce;
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        clearTimeout(debounce);
+        var val = searchInput.value;
+        debounce = setTimeout(function () { state.search = val; applyFilters(); }, 150);
+      });
+    }
+
+    conditionChips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        conditionChips.forEach(function (c) {
+          c.classList.remove('is-active');
+          c.setAttribute('aria-pressed', 'false');
+        });
+        chip.classList.add('is-active');
+        chip.setAttribute('aria-pressed', 'true');
+        state.condition = chip.dataset.akmUcCondition;
+        applyFilters();
+      });
+    });
+
+    if (sortSelect) {
+      sortSelect.addEventListener('change', function () {
+        state.sort = sortSelect.value;
+        applySort();
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        state.search = '';
+        state.condition = 'all';
+        if (searchInput) searchInput.value = '';
+        conditionChips.forEach(function (c) {
+          var isAll = c.dataset.akmUcCondition === 'all';
+          c.classList.toggle('is-active', isAll);
+          c.setAttribute('aria-pressed', String(isAll));
+        });
+        applyFilters();
+      });
+    }
+
+    root.querySelectorAll('[data-akm-uc-fav]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var pressed = btn.getAttribute('aria-pressed') === 'true';
+        btn.setAttribute('aria-pressed', String(!pressed));
+      });
+    });
+
+    applySort();
+    applyFilters();
+
+    /* ---------- COMPARE WORKFLOW ---------- */
+    var compareItems = new Map();
+    var compareToggles = Array.prototype.slice.call(root.querySelectorAll('[data-akm-uc-compare]'));
+    var compareBar = root.querySelector('[data-akm-uc-comparebar]');
+    var compareBarList = root.querySelector('[data-akm-uc-comparebar-list]');
+    var compareBarCount = root.querySelector('[data-akm-uc-comparebar-count]');
+    var compareBarOpen = root.querySelector('[data-akm-uc-comparebar-open]');
+    var compareBarClear = root.querySelector('[data-akm-uc-comparebar-clear]');
+    var compareModal = root.querySelector('[data-akm-uc-comparemodal]');
+    var compareModalBody = root.querySelector('[data-akm-uc-comparemodal-body]');
+    var compareModalCloseEls = root.querySelectorAll('[data-akm-uc-comparemodal-close]');
+    var lastFocusedEl = null;
+
+    function svgRemove() {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    }
+
+    function findToggle(id) {
+      return compareToggles.filter(function (t) { return t.dataset.id === id; })[0];
+    }
+
+    function setToggleState(id, active) {
+      var toggle = findToggle(id);
+      if (!toggle) return;
+      toggle.setAttribute('aria-pressed', String(active));
+      var card = toggle.closest('[data-akm-uc-card]');
+      if (card) card.classList.toggle('is-comparing', active);
+    }
+
+    function renderCompareBar() {
+      if (!compareBar || !compareBarList || !compareBarCount || !compareBarOpen) return;
+      compareBarList.innerHTML = '';
+      compareItems.forEach(function (item) {
+        var chip = document.createElement('div');
+        chip.className = 'akm-uc-comparebar__item';
+        chip.setAttribute('role', 'listitem');
+        chip.innerHTML =
+          '<img src="' + item.image + '" alt="" loading="lazy">' +
+          '<span>' + item.title + '</span>' +
+          '<button type="button" aria-label="إزالة ' + item.title + ' من المقارنة">' + svgRemove() + '</button>';
+        chip.querySelector('button').addEventListener('click', function () { removeFromCompare(item.id); });
+        compareBarList.appendChild(chip);
+      });
+      compareBarCount.textContent = '(' + compareItems.size + ')';
+      compareBarOpen.disabled = compareItems.size < 2;
+      compareBar.hidden = compareItems.size === 0;
+    }
+
+    function addToCompare(data) {
+      if (compareItems.size >= maxCompare) {
+        if (countEl) {
+          var prevText = countEl.textContent;
+          countEl.textContent = 'يمكنك مقارنة ' + maxCompare + ' سيارات كحد أقصى';
+          setTimeout(function () { countEl.textContent = prevText; }, 2200);
+        }
+        return false;
+      }
+      compareItems.set(data.id, data);
+      setToggleState(data.id, true);
+      renderCompareBar();
+      return true;
+    }
+
+    function removeFromCompare(id) {
+      compareItems.delete(id);
+      setToggleState(id, false);
+      renderCompareBar();
+      if (compareItems.size === 0) closeCompareModal();
+      else if (!compareModal.hidden) renderCompareModal();
+    }
+
+    compareToggles.forEach(function (toggle) {
+      toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        var id = toggle.dataset.id;
+        var pressed = toggle.getAttribute('aria-pressed') === 'true';
+        if (pressed) {
+          removeFromCompare(id);
+        } else {
+          addToCompare({
+            id: id,
+            title: toggle.dataset.title,
+            image: toggle.dataset.image,
+            price: toggle.dataset.price,
+            year: toggle.dataset.year,
+            mileage: toggle.dataset.mileage,
+            transmission: toggle.dataset.transmission,
+            fuel: toggle.dataset.fuel,
+            url: toggle.dataset.url
+          });
+        }
+      });
+    });
+
+    if (compareBarClear) {
+      compareBarClear.addEventListener('click', function () {
+        Array.from(compareItems.keys()).forEach(removeFromCompare);
+      });
+    }
+
+    function renderCompareModal() {
+      if (!compareModalBody) return;
+      if (compareItems.size === 0) {
+        compareModalBody.innerHTML = '<p class="akm-uc-compareempty">لا توجد سيارات محددة للمقارنة بعد.</p>';
+        return;
+      }
+      var items = Array.from(compareItems.values());
+      var rows = [
+        { label: '', key: 'header' },
+        { label: 'السعر', key: 'price' },
+        { label: 'سنة الصنع', key: 'year' },
+        { label: 'الممشى', key: 'mileage' },
+        { label: 'ناقل الحركة', key: 'transmission' },
+        { label: 'نوع الوقود', key: 'fuel' },
+        { label: '', key: 'actions' }
+      ];
+
+      var html = '<table class="akm-uc-comparetable"><tbody>';
+      rows.forEach(function (row) {
+        html += '<tr><th scope="row">' + row.label + '</th>';
+        items.forEach(function (item) {
+          if (row.key === 'header') {
+            html += '<td><img src="' + item.image + '" alt=""><span class="akm-uc-compare-title">' + item.title + '</span></td>';
+          } else if (row.key === 'price') {
+            html += '<td class="akm-uc-compare-price">' + item.price + '</td>';
+          } else if (row.key === 'actions') {
+            html += '<td>' +
+              '<a class="akm-uc-compare-view" href="' + item.url + '">عرض السيارة</a><br>' +
+              '<button type="button" class="akm-uc-compare-remove" data-remove-id="' + item.id + '">إزالة</button>' +
+              '</td>';
+          } else {
+            html += '<td>' + item[row.key] + '</td>';
+          }
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      compareModalBody.innerHTML = html;
+
+      compareModalBody.querySelectorAll('[data-remove-id]').forEach(function (btn) {
+        btn.addEventListener('click', function () { removeFromCompare(btn.dataset.removeId); });
+      });
+    }
+
+    function openCompareModal(triggerEl) {
+      if (!compareModal || compareItems.size === 0) return;
+      lastFocusedEl = triggerEl || document.activeElement;
+      renderCompareModal();
+      compareModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      var closeBtn = compareModal.querySelector('.akm-uc-iconbtn');
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeCompareModal() {
+      if (!compareModal || compareModal.hidden) return;
+      compareModal.hidden = true;
+      document.body.style.overflow = '';
+      if (lastFocusedEl) lastFocusedEl.focus();
+    }
+
+    if (compareBarOpen) {
+      compareBarOpen.addEventListener('click', function () { openCompareModal(compareBarOpen); });
+    }
+    compareModalCloseEls.forEach(function (el) {
+      el.addEventListener('click', closeCompareModal);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && compareModal && !compareModal.hidden) closeCompareModal();
+    });
+    if (compareModal) {
+      compareModal.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var focusable = compareModal.querySelectorAll('button, a[href], select, input');
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "AKM Used Cars",
+  "tag": "section",
+  "class": "akm-used-cars-section-dynamic",
+  "settings": [
+    {
+      "type": "header",
+      "content": "إعداد مجموعة السيارات"
+    },
+    {
+      "type": "paragraph",
+      "content": "اختر المجموعة التي تحتوي على منتجات السيارات. كل منتج يمثل سيارة واحدة."
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "مجموعة السيارات المستعملة"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "الحد الأقصى لعدد السيارات المعروضة",
+      "min": 6,
+      "max": 48,
+      "step": 6,
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "max_compare_items",
+      "label": "الحد الأقصى لعدد السيارات في المقارنة",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "header",
+      "content": "محتوى القسم الرئيسي"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "عنوان الصفحة",
+      "default": "سيارات مستعملة للبيع في مصر"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "النص التعريفي",
+      "default": "تصفح سيارات مستعملة معروضة من بائعين موثوقين في مصر، وتواصل مباشرة بدون وسيط أو خطوات شراء إلكترونية."
+    },
+    {
+      "type": "text",
+      "id": "stat_dealers",
+      "label": "إحصائية البائعين",
+      "default": "120+"
+    },
+    {
+      "type": "header",
+      "content": "ترويسة قسم السيارات"
+    },
+    {
+      "type": "text",
+      "id": "grid_heading",
+      "label": "عنوان قسم السيارات",
+      "default": "السيارات المتاحة"
+    },
+    {
+      "type": "textarea",
+      "id": "grid_subtitle",
+      "label": "النص التعريفي لقسم السيارات",
+      "default": "قارن السيارات وتواصل مع البائع مباشرة بدون وسطاء."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trust_chips",
+      "label": "عرض شارات الثقة (سيارات موثوقة، تواصل مباشر، بدون وسطاء)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verified_badge",
+      "label": "عرض شارة موثّق على بطاقة السيارة",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "أزرار التواصل"
+    },
+    {
+      "type": "text",
+      "id": "call_button_label",
+      "label": "تسمية زر الاتصال",
+      "default": "اتصال"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_button_label",
+      "label": "تسمية زر واتساب",
+      "default": "واتساب"
+    },
+    {
+      "type": "text",
+      "id": "compare_button_label",
+      "label": "تسمية زر المقارنة",
+      "default": "مقارنة"
+    }
+  ],
+  "presets": [
+    {
+      "name": "AKM Used Cars",
+      "category": "AKM"
+    }
+  ]
+}
+{% endschema %}
