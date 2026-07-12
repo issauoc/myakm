@@ -1,0 +1,117 @@
+{%- comment -%}
+  Renders <title> + meta description/canonical/OG/Twitter/robots for every page.
+  On the product template it builds a unique, deterministic, per-vehicle title and
+  description from real listing data (never thin/duplicated boilerplate). Include
+  once inside <head>, before {{ content_for_header }}.
+{%- endcomment -%}
+
+{%- if template == 'product' -%}
+  {%- liquid
+    assign car_brand       = product.metafields.car_details.brand    | default: product.vendor
+    assign car_year        = product.metafields.car_details.year     | default: ''
+    assign car_mileage     = product.metafields.car_details.mileage  | default: ''
+    assign car_location    = product.metafields.car_details.location | default: ''
+    assign car_condition   = product.metafields.car_details.condition | default: ''
+    assign car_transmission = product.metafields.car_details.transmission | default: ''
+    assign car_price = product.price | money_without_trailing_zeros | remove: '.00'
+
+    if product.tags contains 'condition:New'
+      assign car_condition = 'New'
+    elsif product.tags contains 'condition:Used'
+      assign car_condition = 'Used'
+    endif
+    assign car_condition_label = car_condition
+    if car_condition == 'New'
+      assign car_condition_label = 'جديدة'
+    elsif car_condition == 'Used'
+      assign car_condition_label = 'مستعملة'
+    endif
+
+    assign seo_title = product.title
+    if car_year != blank
+      unless product.title contains car_year
+        assign seo_title = seo_title | append: ' ' | append: car_year
+      endunless
+    endif
+    if car_location != blank
+      assign seo_title = seo_title | append: ' للبيع في ' | append: car_location
+    endif
+    assign seo_title = seo_title | append: ' | ' | append: shop.name
+    assign seo_title = seo_title | strip_newlines | strip | truncate: 70
+
+    assign seo_description = product.title
+    if car_year != blank
+      assign seo_description = seo_description | append: ' موديل ' | append: car_year
+    endif
+    if car_location != blank
+      assign seo_description = seo_description | append: ' للبيع في ' | append: car_location
+    endif
+    assign seo_description = seo_description | append: ' بسعر ' | append: car_price | append: ' جنيه.'
+    if car_condition_label != blank
+      assign seo_description = seo_description | append: ' الحالة: ' | append: car_condition_label | append: '.'
+    endif
+    if car_mileage != blank
+      assign seo_description = seo_description | append: ' الممشي: ' | append: car_mileage | append: '.'
+    endif
+    if car_transmission != blank
+      assign seo_description = seo_description | append: ' ناقل حركة ' | append: car_transmission | append: '.'
+    endif
+    assign seo_description = seo_description | append: ' تواصل مباشرة مع البائع بدون وسطاء.'
+    assign seo_description = seo_description | strip_newlines | strip | truncate: 160
+
+    assign seo_noindex = false
+    if product.available == false
+      assign seo_noindex = true
+    endif
+    if product.tags contains 'sold' or product.tags contains 'Sold' or product.tags contains 'unavailable' or product.tags contains 'Unavailable' or product.tags contains 'expired' or product.tags contains 'Expired'
+      assign seo_noindex = true
+    endif
+
+    assign seo_image = ''
+    if product.featured_image
+      assign seo_image = product.featured_image | image_url: width: 1200
+    endif
+  -%}
+
+  <title>{{ seo_title }}</title>
+  <meta name="description" content="{{ seo_description | escape }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta name="robots" content="{% if seo_noindex %}noindex, follow{% else %}index, follow{% endif %}">
+
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="{{ seo_title | escape }}">
+  <meta property="og:description" content="{{ seo_description | escape }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:site_name" content="{{ shop.name | escape }}">
+  {%- if seo_image != blank -%}
+    <meta property="og:image" content="https:{{ seo_image }}">
+    <meta property="og:image:secure_url" content="https:{{ seo_image }}">
+    <meta property="og:image:alt" content="{{ product.featured_image.alt | default: product.title | escape }}">
+  {%- endif -%}
+  <meta property="product:price:amount" content="{{ product.price | divided_by: 100.0 }}">
+  <meta property="product:price:currency" content="{{ cart.currency.iso_code }}">
+  <meta property="product:availability" content="{% if product.available %}in stock{% else %}out of stock{% endif %}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ seo_title | escape }}">
+  <meta name="twitter:description" content="{{ seo_description | escape }}">
+  {%- if seo_image != blank -%}<meta name="twitter:image" content="https:{{ seo_image }}">{%- endif -%}
+
+{%- else -%}
+  {%- liquid
+    assign seo_title = page_title | default: shop.name
+    assign seo_description = page_description | default: shop.description
+  -%}
+  <title>{{ seo_title }}{% if seo_title != shop.name %} | {{ shop.name }}{% endif %}</title>
+  {%- if seo_description != blank -%}<meta name="description" content="{{ seo_description | escape }}">{%- endif -%}
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta name="robots" content="index, follow">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ seo_title | escape }}">
+  {%- if seo_description != blank -%}<meta property="og:description" content="{{ seo_description | escape }}">{%- endif -%}
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:site_name" content="{{ shop.name | escape }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{ seo_title | escape }}">
+{%- endif -%}

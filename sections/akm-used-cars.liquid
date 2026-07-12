@@ -140,6 +140,7 @@
               assign car_phone    = product.metafields.car_details.phone    | default: ''
               assign car_whatsapp = product.metafields.car_details.whatsapp | default: car_phone
               assign car_verified = product.metafields.car_details.verified | default: false
+              assign car_dealer   = product.metafields.car_details.dealer_name | default: product.vendor
 
               assign _mf = product.metafields.shopify["item-condition"].value
               assign car_condition = ''
@@ -210,7 +211,7 @@
                 assign car_condition_label = 'مستعملة'
               endif
 
-              assign search_string = car_brand | append: ' ' | append: product.title | append: ' ' | append: car_year | append: ' ' | append: car_location | append: ' ' | append: product.vendor | downcase
+              assign search_string = car_brand | append: ' ' | append: product.title | append: ' ' | append: car_year | append: ' ' | append: car_location | append: ' ' | append: car_transmission | append: ' ' | append: car_dealer | downcase
 
               assign car_price = product.price | money_without_trailing_zeros | remove: '.00'
 
@@ -295,8 +296,12 @@
 
                 <h3 class="akm-uc-card__title">{{ product.title }}</h3>
                 <p class="akm-uc-card__meta">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {%- if car_location != blank -%}{{ car_location }}{%- else -%}{{ product.vendor }}{%- endif -%}
+                  {%- if car_verified and show_verified -%}
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.39 2.43 3.4-.34.82 3.33 3.04 1.6-1.18 3.22 1.18 3.22-3.04 1.6-.82 3.33-3.4-.34L12 22l-2.39-2.43-3.4.34-.82-3.33-3.04-1.6 1.18-3.22L2.35 8.54l3.04-1.6.82-3.33 3.4.34L12 2zm-1.1 14.1l6.4-6.4-1.4-1.4-5 5-2.5-2.5-1.4 1.4 3.9 3.9z"/></svg>
+                  {%- else -%}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>
+                  {%- endif -%}
+                  {{ car_dealer }}
                 </p>
 
                 <ul class="akm-uc-specs">
@@ -305,16 +310,16 @@
                     <span>{{ car_year | default: '—' }}</span>
                   </li>
                   <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>{{ car_location | default: '—' }}</span>
+                  </li>
+                  <li>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 17l-8-5-8 5"/><path d="M4 7h16v10H4z"/></svg>
                     <span>{{ car_mileage | default: '—' }}</span>
                   </li>
                   <li>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     <span>{{ car_transmission | default: '—' }}</span>
-                  </li>
-                  <li>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h12V2H3v20zM15 8l4 2v9a2 2 0 0 1-4 0"/></svg>
-                    <span>{{ car_fuel | default: '—' }}</span>
                   </li>
                 </ul>
 

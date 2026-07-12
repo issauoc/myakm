@@ -1,0 +1,82 @@
+{%- comment -%}
+  JSON-LD for a single vehicle listing: Vehicle + Offer + BreadcrumbList.
+  Expects car_* variables and breadcrumb_collection to already be assigned
+  by the including section (sections/main-product.liquid).
+{%- endcomment -%}
+
+{%- liquid
+  assign ld_condition_url = 'https://schema.org/UsedCondition'
+  if car_condition == 'New'
+    assign ld_condition_url = 'https://schema.org/NewCondition'
+  endif
+
+  assign ld_availability = 'https://schema.org/OutOfStock'
+  if product.available
+    assign ld_availability = 'https://schema.org/InStock'
+  endif
+
+  assign ld_mileage_num = car_mileage | remove: ',' | remove: ' ' | remove: 'كم' | remove: 'km' | remove: 'KM' | strip | times: 1
+-%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Vehicle",
+      "@id": "{{ canonical_url }}#vehicle",
+      "name": {{ product.title | json }},
+      "description": {{ seo_description | json }},
+      "image": [
+        {%- for image in product.images limit: 8 -%}
+          "https:{{ image | image_url: width: 1600 }}"{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ],
+      "sku": {{ product.selected_or_first_available_variant.sku | default: product.id | json }},
+      "brand": { "@type": "Brand", "name": {{ car_brand | json }} },
+      "model": {{ product.title | json }},
+      {%- if car_year != blank %}
+      "vehicleModelDate": {{ car_year | json }},
+      "modelDate": {{ car_year | json }},
+      {%- endif %}
+      {%- if ld_mileage_num > 0 %}
+      "mileageFromOdometer": {
+        "@type": "QuantitativeValue",
+        "value": {{ ld_mileage_num }},
+        "unitCode": "KMT"
+      },
+      {%- endif %}
+      {%- if car_transmission != blank %}
+      "vehicleTransmission": {{ car_transmission | json }},
+      {%- endif %}
+      {%- if car_fuel != blank %}
+      "fuelType": {{ car_fuel | json }},
+      {%- endif %}
+      {%- if car_color != blank %}
+      "color": {{ car_color | json }},
+      {%- endif %}
+      "vehicleCondition": "{{ ld_condition_url }}",
+      "url": "{{ canonical_url }}",
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ canonical_url }}",
+        "priceCurrency": {{ cart.currency.iso_code | json }},
+        "price": "{{ product.price | divided_by: 100.0 }}",
+        "availability": "{{ ld_availability }}",
+        "itemCondition": "{{ ld_condition_url }}",
+        "seller": {
+          "@type": "Organization",
+          "name": {{ car_dealer | json }}
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": {{ shop.name | json }}, "item": {{ shop.url | json }} },
+        { "@type": "ListItem", "position": 2, "name": {{ breadcrumb_collection.title | json }}, "item": {{ breadcrumb_collection.url | prepend: shop.url | json }} },
+        { "@type": "ListItem", "position": 3, "name": {{ product.title | json }}, "item": {{ canonical_url | json }} }
+      ]
+    }
+  ]
+}
+</script>

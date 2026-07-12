@@ -1,0 +1,38 @@
+{%- comment -%}
+  Minimal theme shell. If this store already has its own layout/theme.liquid,
+  merge the <head> block below (vehicle-seo-meta include + content_for_header)
+  into it instead of replacing the existing file — this version intentionally
+  omits site chrome (menus, cart drawer, search) that a real theme already has.
+{%- endcomment -%}
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    {%- render 'vehicle-seo-meta' -%}
+    {{ content_for_header }}
+    <style>
+      html { -webkit-text-size-adjust: 100%; }
+      body { margin: 0; font-family: -apple-system, "Segoe UI", Tahoma, Arial, sans-serif; background: #f8fafc; color: #0f172a; }
+      .akm-skip-link { position: absolute; right: 8px; top: -60px; background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 100; transition: top .15s ease; }
+      .akm-skip-link:focus { top: 8px; }
+      .akm-site-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #0f172a; color: #fff; }
+      .akm-site-header a { color: #fff; text-decoration: none; font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+      .akm-site-footer { padding: 24px 20px; text-align: center; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; margin-top: 40px; }
+    </style>
+  </head>
+  <body>
+    <a class="akm-skip-link" href="#MainContent">تخطي إلى المحتوى</a>
+    <header class="akm-site-header">
+      <a href="/">{{ shop.name }}</a>
+    </header>
+    <main id="MainContent" role="main">
+      {{ content_for_layout }}
+    </main>
+    <footer class="akm-site-footer">
+      &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}
+    </footer>
+  </body>
+</html>

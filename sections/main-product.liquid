@@ -1,0 +1,444 @@
+{%- comment -%}
+  AKM Vehicle Detail Page (main-product)
+  SEO-first PDP: breadcrumbs, single H1 (make/model/year), crawlable spec tables,
+  unique per-vehicle description, Vehicle/Offer/Breadcrumb structured data,
+  optimized images, seller contact, and related-vehicle internal linking.
+  Pair with templates/product.json and snippets/vehicle-seo-meta.liquid
+  (included from layout/theme.liquid <head>) for canonical/OG/robots tags.
+{%- endcomment -%}
+
+{%- liquid
+  assign car_brand    = product.metafields.car_details.brand    | default: product.vendor
+  assign car_model     = product.metafields.car_details.model     | default: ''
+  assign car_year      = product.metafields.car_details.year      | default: ''
+  assign car_mileage   = product.metafields.car_details.mileage   | default: ''
+  assign car_location  = product.metafields.car_details.location  | default: ''
+  assign car_color     = product.metafields.car_details.color     | default: ''
+  assign car_phone     = product.metafields.car_details.phone     | default: ''
+  assign car_whatsapp  = product.metafields.car_details.whatsapp  | default: car_phone
+  assign car_verified  = product.metafields.car_details.verified  | default: false
+  assign car_dealer    = product.metafields.car_details.dealer_name | default: product.vendor
+
+  assign _mf = product.metafields.shopify["item-condition"].value
+  assign car_condition = ''
+  if _mf.label.value != blank
+    assign car_condition = _mf.label.value
+  elsif _mf.name.value != blank
+    assign car_condition = _mf.name.value
+  elsif _mf.first.label.value != blank
+    assign car_condition = _mf | map: 'label' | map: 'value' | join: ' / '
+  elsif _mf.first.name.value != blank
+    assign car_condition = _mf | map: 'name' | map: 'value' | join: ' / '
+  endif
+  if car_condition == blank
+    assign car_condition = product.metafields.car_details.condition | default: ''
+  endif
+
+  assign _mf = product.metafields.shopify["transmission-type"].value
+  assign car_transmission = ''
+  if _mf.label.value != blank
+    assign car_transmission = _mf.label.value
+  elsif _mf.name.value != blank
+    assign car_transmission = _mf.name.value
+  elsif _mf.first.label.value != blank
+    assign car_transmission = _mf | map: 'label' | map: 'value' | join: ' / '
+  elsif _mf.first.name.value != blank
+    assign car_transmission = _mf | map: 'name' | map: 'value' | join: ' / '
+  endif
+  if car_transmission == blank
+    assign car_transmission = product.metafields.car_details.transmission | default: ''
+  endif
+
+  assign _mf = product.metafields.shopify["fuel-supply"].value
+  assign car_fuel = ''
+  if _mf.label.value != blank
+    assign car_fuel = _mf.label.value
+  elsif _mf.name.value != blank
+    assign car_fuel = _mf.name.value
+  elsif _mf.first.label.value != blank
+    assign car_fuel = _mf | map: 'label' | map: 'value' | join: ' / '
+  elsif _mf.first.name.value != blank
+    assign car_fuel = _mf | map: 'name' | map: 'value' | join: ' / '
+  endif
+  if car_fuel == blank
+    assign car_fuel = product.metafields.car_details.fuel_type | default: ''
+  endif
+
+  assign _mf = product.metafields.shopify["drive-type"].value
+  assign car_drive = ''
+  if _mf.label.value != blank
+    assign car_drive = _mf.label.value
+  elsif _mf.name.value != blank
+    assign car_drive = _mf.name.value
+  elsif _mf.first.label.value != blank
+    assign car_drive = _mf | map: 'label' | map: 'value' | join: ' / '
+  elsif _mf.first.name.value != blank
+    assign car_drive = _mf | map: 'name' | map: 'value' | join: ' / '
+  endif
+  if car_drive == blank
+    assign car_drive = product.metafields.car_details.drive_type | default: ''
+  endif
+
+  if product.tags contains 'condition:New'
+    assign car_condition = 'New'
+  elsif product.tags contains 'condition:Used'
+    assign car_condition = 'Used'
+  endif
+  if product.tags contains 'verified' or product.tags contains 'Verified' or product.tags contains 'موثّق'
+    assign car_verified = true
+  endif
+  for tag in product.tags
+    if tag contains 'brand:'
+      assign car_brand = tag | remove: 'brand:'
+      break
+    endif
+  endfor
+
+  assign car_condition_label = car_condition
+  if car_condition == 'New'
+    assign car_condition_label = 'جديدة'
+  elsif car_condition == 'Used'
+    assign car_condition_label = 'مستعملة'
+  endif
+
+  assign car_price = product.price | money_without_trailing_zeros | remove: '.00'
+
+  assign seo_noindex = false
+  if product.available == false
+    assign seo_noindex = true
+  endif
+  if product.tags contains 'sold' or product.tags contains 'Sold' or product.tags contains 'unavailable' or product.tags contains 'Unavailable' or product.tags contains 'expired' or product.tags contains 'Expired'
+    assign seo_noindex = true
+  endif
+
+  assign h1_text = product.title
+  if car_year != blank
+    unless product.title contains car_year
+      assign h1_text = h1_text | append: ' ' | append: car_year
+    endunless
+  endif
+
+  assign seo_description = product.title
+  if car_year != blank
+    assign seo_description = seo_description | append: ' موديل ' | append: car_year
+  endif
+  if car_location != blank
+    assign seo_description = seo_description | append: ' للبيع في ' | append: car_location
+  endif
+  assign seo_description = seo_description | append: ' بسعر ' | append: car_price | append: ' جنيه.'
+  if car_condition_label != blank
+    assign seo_description = seo_description | append: ' الحالة: ' | append: car_condition_label | append: '.'
+  endif
+  if car_mileage != blank
+    assign seo_description = seo_description | append: ' الممشي: ' | append: car_mileage | append: '.'
+  endif
+  if car_transmission != blank
+    assign seo_description = seo_description | append: ' ناقل حركة ' | append: car_transmission | append: '.'
+  endif
+  assign seo_description = seo_description | append: ' تواصل مباشرة مع البائع بدون وسطاء.'
+  assign seo_description = seo_description | strip_newlines | strip | truncate: 300
+
+  assign generated_desc = product.title
+  if car_year != blank
+    assign generated_desc = generated_desc | append: ' موديل ' | append: car_year
+  endif
+  assign generated_desc = generated_desc | append: '، معروضة للبيع'
+  if car_location != blank
+    assign generated_desc = generated_desc | append: ' في ' | append: car_location
+  endif
+  assign generated_desc = generated_desc | append: ' بسعر ' | append: car_price | append: ' جنيه مصري.'
+  if car_condition_label != blank
+    assign generated_desc = generated_desc | append: ' السيارة بحالة ' | append: car_condition_label | append: '.'
+  endif
+  if car_mileage != blank
+    assign generated_desc = generated_desc | append: ' الممشي المسجل حوالي ' | append: car_mileage | append: '.'
+  endif
+  if car_transmission != blank
+    assign generated_desc = generated_desc | append: ' تعمل بناقل حركة ' | append: car_transmission
+    if car_fuel != blank
+      assign generated_desc = generated_desc | append: ' وتعمل بالوقود ' | append: car_fuel
+    endif
+    assign generated_desc = generated_desc | append: '.'
+  elsif car_fuel != blank
+    assign generated_desc = generated_desc | append: ' تعمل بالوقود ' | append: car_fuel | append: '.'
+  endif
+  assign generated_desc = generated_desc | append: ' للاستفسار والمعاينة، تواصل مباشرة مع البائع عبر واتساب أو الاتصال الهاتفي بدون وسطاء.'
+
+  assign wa_number = car_whatsapp | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign wa_message_text = 'مرحبًا، شاهدت إعلان ' | append: product.title | append: ' بسعر ' | append: car_price | append: ' وأريد الاستفسار عن تفاصيل السيارة والمعاينة. هل متاحة؟ - ' | append: shop.url | append: product.url
+  assign wa_message = wa_message_text | url_encode
+
+  assign breadcrumb_collection = collections[section.settings.collection]
+  if breadcrumb_collection == blank
+    assign breadcrumb_collection = product.collections.first
+  endif
+
+  assign related_limit = section.settings.related_count | default: 4
+-%}
+
+{%- render 'vehicle-structured-data',
+  car_brand: car_brand,
+  car_year: car_year,
+  car_mileage: car_mileage,
+  car_transmission: car_transmission,
+  car_fuel: car_fuel,
+  car_color: car_color,
+  car_condition: car_condition,
+  car_dealer: car_dealer,
+  seo_description: seo_description,
+  breadcrumb_collection: breadcrumb_collection
+-%}
+
+<div class="akm-pdp" id="akm-pdp-{{ section.id }}" dir="rtl" lang="ar">
+
+  <nav class="akm-pdp-breadcrumb" aria-label="مسار التنقل">
+    <ol>
+      <li><a href="/">الرئيسية</a></li>
+      {%- if breadcrumb_collection != blank -%}
+        <li><a href="{{ breadcrumb_collection.url }}">{{ breadcrumb_collection.title }}</a></li>
+      {%- endif -%}
+      <li aria-current="page">{{ product.title }}</li>
+    </ol>
+  </nav>
+
+  {%- if seo_noindex -%}
+    <div class="akm-pdp-notice" role="status">
+      هذا الإعلان لم يعد متاحًا حاليًا. يمكنك تصفح
+      {%- if breadcrumb_collection != blank %} <a href="{{ breadcrumb_collection.url }}">سيارات مشابهة</a>{%- endif -%}.
+    </div>
+  {%- endif -%}
+
+  <div class="akm-pdp-layout">
+    <div class="akm-pdp-gallery">
+      {%- if product.images.size > 0 -%}
+        <div class="akm-pdp-gallery__scroller" role="list" aria-label="صور {{ product.title | escape }}">
+          {%- for image in product.images -%}
+            <div class="akm-pdp-gallery__item" role="listitem">
+              <img
+                src="{{ image | image_url: width: 1200 }}"
+                srcset="{{ image | image_url: width: 600 }} 600w, {{ image | image_url: width: 1200 }} 1200w, {{ image | image_url: width: 1800 }} 1800w"
+                sizes="(min-width: 1024px) 720px, 100vw"
+                width="{{ image.width | default: 1200 }}"
+                height="{{ image.height | default: 900 }}"
+                alt="{{ image.alt | default: product.title | escape }} - {{ car_year }} - صورة {{ forloop.index }}"
+                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                {% if forloop.first %}fetchpriority="high"{% endif %}
+                class="akm-pdp-gallery__img">
+            </div>
+          {%- endfor -%}
+        </div>
+      {%- else -%}
+        <div class="akm-pdp-gallery__placeholder" role="img" aria-label="{{ product.title | escape }}">لا توجد صورة</div>
+      {%- endif -%}
+    </div>
+
+    <div class="akm-pdp-main">
+      <h1 class="akm-pdp-title">{{ h1_text }}</h1>
+
+      <div class="akm-pdp-quickfacts">
+        <span class="akm-pdp-price">{{ car_price }} ج.م</span>
+        {%- if car_condition_label != blank -%}<span class="akm-pdp-chip">{{ car_condition_label }}</span>{%- endif -%}
+        {%- if car_verified -%}<span class="akm-pdp-chip akm-pdp-chip--verified">بائع موثّق</span>{%- endif -%}
+        {%- unless product.available -%}<span class="akm-pdp-chip akm-pdp-chip--sold">غير متاحة</span>{%- endunless -%}
+      </div>
+
+      <section class="akm-pdp-section" aria-labelledby="akm-pdp-specs-h2-{{ section.id }}">
+        <h2 id="akm-pdp-specs-h2-{{ section.id }}">المواصفات الفنية</h2>
+
+        <h3>الأداء والقيادة</h3>
+        <table class="akm-pdp-table">
+          <tbody>
+            {%- if car_mileage != blank -%}<tr><th scope="row">الممشي</th><td>{{ car_mileage }}</td></tr>{%- endif -%}
+            {%- if car_transmission != blank -%}<tr><th scope="row">ناقل الحركة</th><td>{{ car_transmission }}</td></tr>{%- endif -%}
+            {%- if car_fuel != blank -%}<tr><th scope="row">نوع الوقود</th><td>{{ car_fuel }}</td></tr>{%- endif -%}
+            {%- if car_drive != blank -%}<tr><th scope="row">نظام الدفع</th><td>{{ car_drive }}</td></tr>{%- endif -%}
+          </tbody>
+        </table>
+
+        <h3>الملكية والحالة</h3>
+        <table class="akm-pdp-table">
+          <tbody>
+            {%- if car_year != blank -%}<tr><th scope="row">سنة الصنع</th><td>{{ car_year }}</td></tr>{%- endif -%}
+            {%- if car_condition_label != blank -%}<tr><th scope="row">الحالة</th><td>{{ car_condition_label }}</td></tr>{%- endif -%}
+            {%- if car_brand != blank -%}<tr><th scope="row">الماركة</th><td>{{ car_brand }}</td></tr>{%- endif -%}
+            {%- if car_model != blank -%}<tr><th scope="row">الموديل</th><td>{{ car_model }}</td></tr>{%- endif -%}
+            {%- if car_color != blank -%}<tr><th scope="row">اللون</th><td>{{ car_color }}</td></tr>{%- endif -%}
+            {%- if car_location != blank -%}<tr><th scope="row">المدينة</th><td>{{ car_location }}</td></tr>{%- endif -%}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="akm-pdp-section" aria-labelledby="akm-pdp-desc-h2-{{ section.id }}">
+        <h2 id="akm-pdp-desc-h2-{{ section.id }}">وصف السيارة</h2>
+        <p class="akm-pdp-desc-generated">{{ generated_desc }}</p>
+        {%- if product.description != blank -%}
+          <div class="akm-pdp-desc-rich">{{ product.description }}</div>
+        {%- endif -%}
+      </section>
+
+      <section class="akm-pdp-section" aria-labelledby="akm-pdp-seller-h2-{{ section.id }}">
+        <h2 id="akm-pdp-seller-h2-{{ section.id }}">التواصل مع البائع</h2>
+        <div class="akm-pdp-seller">
+          <div class="akm-pdp-seller__id">
+            <strong>{{ car_dealer }}</strong>
+            {%- if car_verified -%}<span class="akm-pdp-chip akm-pdp-chip--verified">موثّق</span>{%- endif -%}
+          </div>
+          {%- if car_location != blank -%}<p class="akm-pdp-seller__loc">{{ car_location }}</p>{%- endif -%}
+          <div class="akm-pdp-seller__actions">
+            {%- if car_whatsapp != blank -%}
+              <a class="akm-pdp-btn akm-pdp-btn--wa" href="https://wa.me/{{ wa_number }}?text={{ wa_message }}" target="_blank" rel="noopener">تواصل عبر واتساب</a>
+            {%- endif -%}
+            {%- if car_phone != blank -%}
+              <a class="akm-pdp-btn akm-pdp-btn--call" href="tel:{{ car_phone }}">اتصال</a>
+            {%- endif -%}
+          </div>
+        </div>
+        {%- if breadcrumb_collection != blank -%}
+          <p class="akm-pdp-more-link"><a href="{{ breadcrumb_collection.url }}">تصفح المزيد من سيارات {{ car_brand }} في {{ breadcrumb_collection.title }}</a></p>
+        {%- endif -%}
+      </section>
+
+      {%- if breadcrumb_collection != blank -%}
+        {%- liquid
+          assign related_count = 0
+        -%}
+        <section class="akm-pdp-section" aria-labelledby="akm-pdp-related-h2-{{ section.id }}">
+          <h2 id="akm-pdp-related-h2-{{ section.id }}">سيارات مشابهة</h2>
+          <div class="akm-pdp-related-grid">
+            {%- for related_product in breadcrumb_collection.products -%}
+              {%- if related_count >= related_limit -%}{%- break -%}{%- endif -%}
+              {%- unless related_product.id == product.id -%}
+                {%- assign related_count = related_count | plus: 1 -%}
+                {%- assign related_price = related_product.price | money_without_trailing_zeros | remove: '.00' -%}
+                <a class="akm-pdp-related-card" href="{{ related_product.url }}">
+                  {%- if related_product.featured_image -%}
+                    <img src="{{ related_product.featured_image | image_url: width: 400 }}"
+                         width="400" height="300"
+                         alt="{{ related_product.title | escape }}"
+                         loading="lazy">
+                  {%- endif -%}
+                  <span class="akm-pdp-related-card__title">{{ related_product.title }}</span>
+                  <span class="akm-pdp-related-card__price">{{ related_price }} ج.م</span>
+                </a>
+              {%- endunless -%}
+            {%- endfor -%}
+          </div>
+        </section>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<style>
+  .akm-pdp {
+    --akm-pdp-bg: #f8fafc;
+    --akm-pdp-surface: #ffffff;
+    --akm-pdp-ink: #0f172a;
+    --akm-pdp-ink-soft: #475569;
+    --akm-pdp-ink-mute: #94a3b8;
+    --akm-pdp-line: #e2e8f0;
+    --akm-pdp-line-soft: #f1f5f9;
+    --akm-pdp-accent: #e11d48;
+    --akm-pdp-price: #1d4ed8;
+    --akm-pdp-wa: #25d366;
+    --akm-pdp-call: #2563eb;
+    --akm-pdp-verified: #0ea5e9;
+    --akm-pdp-radius: 14px;
+    --akm-pdp-radius-pill: 999px;
+
+    display: block;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 16px 64px;
+    color: var(--akm-pdp-ink);
+    background: var(--akm-pdp-bg);
+    line-height: 1.6;
+  }
+  .akm-pdp *, .akm-pdp *::before, .akm-pdp *::after { box-sizing: border-box; }
+  .akm-pdp img { display: block; max-width: 100%; height: auto; }
+  .akm-pdp a { color: inherit; }
+  .akm-pdp :focus-visible { outline: 3px solid var(--akm-pdp-call); outline-offset: 2px; }
+
+  .akm-pdp-breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 18px; padding: 0; font-size: 13px; color: var(--akm-pdp-ink-mute); }
+  .akm-pdp-breadcrumb li:not(:last-child)::after { content: '/'; margin-inline-start: 6px; color: var(--akm-pdp-ink-mute); }
+  .akm-pdp-breadcrumb a { color: var(--akm-pdp-ink-soft); text-decoration: none; font-weight: 600; }
+  .akm-pdp-breadcrumb a:hover { color: var(--akm-pdp-accent); text-decoration: underline; }
+  .akm-pdp-breadcrumb li[aria-current="page"] { color: var(--akm-pdp-ink); font-weight: 600; }
+
+  .akm-pdp-notice { padding: 12px 16px; margin-bottom: 18px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: var(--akm-pdp-radius); font-size: 14px; font-weight: 600; }
+  .akm-pdp-notice a { text-decoration: underline; }
+
+  .akm-pdp-layout { display: grid; grid-template-columns: 1fr; gap: 28px; }
+  @media (min-width: 960px) {
+    .akm-pdp-layout { grid-template-columns: 1.1fr 1fr; align-items: start; }
+  }
+
+  .akm-pdp-gallery__scroller { display: flex; overflow-x: auto; gap: 10px; scroll-snap-type: x mandatory; border-radius: var(--akm-pdp-radius); }
+  .akm-pdp-gallery__item { flex: 0 0 100%; scroll-snap-align: start; aspect-ratio: 4/3; overflow: hidden; border-radius: var(--akm-pdp-radius); background: var(--akm-pdp-line-soft); }
+  .akm-pdp-gallery__img { width: 100%; height: 100%; object-fit: cover; }
+  .akm-pdp-gallery__placeholder { aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; background: var(--akm-pdp-line-soft); color: var(--akm-pdp-ink-mute); border-radius: var(--akm-pdp-radius); }
+
+  .akm-pdp-title { font-size: clamp(22px, 3.4vw, 30px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 12px; line-height: 1.25; }
+
+  .akm-pdp-quickfacts { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .akm-pdp-price { font-size: 26px; font-weight: 800; color: var(--akm-pdp-price); }
+  .akm-pdp-chip { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: var(--akm-pdp-radius-pill); background: var(--akm-pdp-line-soft); color: var(--akm-pdp-ink-soft); font-size: 12.5px; font-weight: 700; }
+  .akm-pdp-chip--verified { background: rgba(14,165,233,.12); color: var(--akm-pdp-verified); }
+  .akm-pdp-chip--sold { background: rgba(225,29,72,.12); color: var(--akm-pdp-accent); }
+
+  .akm-pdp-section { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--akm-pdp-line); }
+  .akm-pdp-section h2 { font-size: 19px; font-weight: 800; margin: 0 0 14px; }
+  .akm-pdp-section h3 { font-size: 14px; font-weight: 700; color: var(--akm-pdp-ink-soft); margin: 16px 0 8px; }
+  .akm-pdp-section h3:first-of-type { margin-top: 0; }
+
+  .akm-pdp-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .akm-pdp-table tr { border-bottom: 1px solid var(--akm-pdp-line-soft); }
+  .akm-pdp-table th, .akm-pdp-table td { padding: 9px 4px; text-align: right; font-size: 13.5px; }
+  .akm-pdp-table th { color: var(--akm-pdp-ink-mute); font-weight: 600; width: 40%; }
+  .akm-pdp-table td { color: var(--akm-pdp-ink); font-weight: 700; }
+
+  .akm-pdp-desc-generated { font-size: 14.5px; color: var(--akm-pdp-ink-soft); background: var(--akm-pdp-line-soft); padding: 14px; border-radius: var(--akm-pdp-radius); }
+  .akm-pdp-desc-rich { margin-top: 14px; font-size: 14.5px; color: var(--akm-pdp-ink); }
+
+  .akm-pdp-seller__id { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  .akm-pdp-seller__loc { margin: 4px 0 14px; font-size: 13.5px; color: var(--akm-pdp-ink-soft); }
+  .akm-pdp-seller__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .akm-pdp-btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; min-height: 46px; border-radius: var(--akm-pdp-radius-pill); font-weight: 700; font-size: 14px; text-decoration: none; }
+  .akm-pdp-btn--wa { background: var(--akm-pdp-wa); color: #fff; }
+  .akm-pdp-btn--call { background: var(--akm-pdp-call); color: #fff; }
+  .akm-pdp-more-link { margin: 14px 0 0; font-size: 13px; }
+  .akm-pdp-more-link a { color: var(--akm-pdp-call); font-weight: 600; text-decoration: underline; }
+
+  .akm-pdp-related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  @media (min-width: 640px) { .akm-pdp-related-grid { grid-template-columns: repeat(4, 1fr); } }
+  .akm-pdp-related-card { display: flex; flex-direction: column; border: 1px solid var(--akm-pdp-line); border-radius: var(--akm-pdp-radius); overflow: hidden; background: var(--akm-pdp-surface); text-decoration: none; transition: box-shadow .2s ease, transform .2s ease; }
+  .akm-pdp-related-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -8px rgba(15,23,42,.18); }
+  .akm-pdp-related-card img { aspect-ratio: 4/3; object-fit: cover; }
+  .akm-pdp-related-card__title { padding: 8px 10px 0; font-size: 12.5px; font-weight: 700; color: var(--akm-pdp-ink); }
+  .akm-pdp-related-card__price { padding: 2px 10px 10px; font-size: 13px; font-weight: 800; color: var(--akm-pdp-price); }
+</style>
+
+{% schema %}
+{
+  "name": "صفحة تفاصيل السيارة",
+  "tag": "section",
+  "class": "akm-main-product-section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "مجموعة السيارات (لمسار التنقل والسيارات المشابهة)",
+      "info": "إن تُرك فارغًا سيتم استخدام أول مجموعة تنتمي إليها هذه السيارة."
+    },
+    {
+      "type": "range",
+      "id": "related_count",
+      "label": "عدد السيارات المشابهة المعروضة",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    }
+  ]
+}
+{% endschema %}
