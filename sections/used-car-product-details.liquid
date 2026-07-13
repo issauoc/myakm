@@ -1,10 +1,10 @@
 {% comment %}
   ============================================================
-  AKM — Used Car Product Details
+  AKM — Used Car Product Details  v2
   File: sections/used-car-product-details.liquid
   Dedicated template for used cars only.
   No cart, no checkout, no product form, no inventory language.
-  All CSS scoped under .akm-used-car-product
+  All CSS scoped under .akm-pdp
   ============================================================
 {% endcomment %}
 
@@ -143,31 +143,14 @@
     assign m_whatsapp = section.settings.default_whatsapp
   endif
 
-  assign has_quick_specs = false
-  if m_year         != blank
-    assign has_quick_specs = true
-  endif
-  if m_mileage      != blank
-    assign has_quick_specs = true
-  endif
-  if m_transmission != blank
-    assign has_quick_specs = true
-  endif
-  if m_fuel         != blank
-    assign has_quick_specs = true
-  endif
-  if m_location     != blank
-    assign has_quick_specs = true
-  endif
-  if m_condition    != blank
-    assign has_quick_specs = true
-  endif
-
   assign has_tech = false
-  if m_engine    != blank
+  if m_engine != blank
     assign has_tech = true
   endif
-  if m_drive     != blank
+  if m_drive != blank
+    assign has_tech = true
+  endif
+  if m_fuel != blank
     assign has_tech = true
   endif
   if m_ext_color != blank
@@ -195,1253 +178,564 @@
 -%}
 
 <style>
-  .akm-used-car-product {
-    --akm-bg:        {{ section.settings.page_bg }};
-    --akm-card:      {{ section.settings.card_bg }};
-    --akm-text:      {{ section.settings.text_primary }};
-    --akm-muted:     {{ section.settings.text_muted }};
-    --akm-accent:    {{ section.settings.accent }};
-    --akm-btn-bg:    {{ section.settings.btn_bg }};
-    --akm-btn-text:  {{ section.settings.btn_text }};
-    --akm-wa-bg:     {{ section.settings.whatsapp_bg }};
-    --akm-call-bg:   {{ section.settings.call_bg }};
-    --akm-border:    {{ section.settings.border }};
-    --akm-trust-bg:  {{ section.settings.trust_card_bg }};
-    --akm-spec-bg:   {{ section.settings.spec_card_bg }};
+  .akm-pdp {
+    --pdp-bg:       {{ section.settings.page_bg }};
+    --pdp-card:     {{ section.settings.card_bg }};
+    --pdp-ink:      {{ section.settings.text_primary }};
+    --pdp-mute:     {{ section.settings.text_muted }};
+    --pdp-accent:   {{ section.settings.accent }};
+    --pdp-border:   {{ section.settings.border }};
+    --pdp-spec-bg:  {{ section.settings.spec_card_bg }};
+    --pdp-trust-bg: {{ section.settings.trust_card_bg }};
+    --pdp-btn-bg:   {{ section.settings.btn_bg }};
+    --pdp-btn-ink:  {{ section.settings.btn_text }};
+    --pdp-wa:       {{ section.settings.whatsapp_bg }};
+    --pdp-call:     {{ section.settings.call_bg }};
+    --pdp-radius:   14px;
 
-    background: var(--akm-bg);
-    color: var(--akm-text);
+    background: var(--pdp-bg);
+    color: var(--pdp-ink);
     direction: rtl;
-    padding: 16px 0 56px;
+    padding: 20px 0 60px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
+  .akm-pdp *, .akm-pdp *::before, .akm-pdp *::after { box-sizing: border-box; }
 
-  .akm-used-car-product *,
-  .akm-used-car-product *::before,
-  .akm-used-car-product *::after { box-sizing: border-box; }
-
-  .akm-used-car-product .akm-container {
+  .akm-pdp .pdp-wrap {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 16px;
   }
 
-  /* Breadcrumb */
-  .akm-used-car-product .akm-breadcrumb {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-    font-size: 13px;
-    color: var(--akm-muted);
-    margin-bottom: 16px;
+  /* ── Breadcrumb ── */
+  .akm-pdp .pdp-crumbs {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    font-size: 13px; color: var(--pdp-mute); margin-bottom: 18px;
+    list-style: none; padding: 0;
   }
-  .akm-used-car-product .akm-breadcrumb a {
-    color: var(--akm-muted);
-    text-decoration: none;
-    transition: color .15s ease;
-  }
-  .akm-used-car-product .akm-breadcrumb a:hover { color: var(--akm-text); }
-  .akm-used-car-product .akm-breadcrumb .akm-sep { opacity: .6; }
-  .akm-used-car-product .akm-breadcrumb .akm-current {
-    color: var(--akm-text);
-    font-weight: 600;
-  }
+  .akm-pdp .pdp-crumbs a { color: var(--pdp-mute); text-decoration: none; }
+  .akm-pdp .pdp-crumbs a:hover { color: var(--pdp-ink); }
+  .akm-pdp .pdp-crumbs .sep { opacity: .5; }
+  .akm-pdp .pdp-crumbs .cur { color: var(--pdp-ink); font-weight: 600; }
 
-  /* Hero */
-  .akm-used-car-product .akm-hero {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    margin-bottom: 28px;
+  /* ── Hero grid ── */
+  .akm-pdp .pdp-hero {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+    margin-bottom: 24px;
   }
 
   /* Gallery */
-  .akm-used-car-product .akm-gallery-main {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 4px 16px rgba(15, 23, 42, .04);
+  .akm-pdp .pdp-gallery-frame {
+    background: var(--pdp-card); border: 1px solid var(--pdp-border);
+    border-radius: var(--pdp-radius); overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05);
   }
-  .akm-used-car-product .akm-main-img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
+  .akm-pdp .pdp-main-img {
+    display: block; width: 100%; height: auto;
+    aspect-ratio: 4/3; object-fit: cover;
   }
-  .akm-used-car-product .akm-gallery-thumbs {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 10px 2px;
-    scroll-snap-type: x mandatory;
+  .akm-pdp .pdp-thumbs {
+    display: flex; gap: 8px; padding: 10px 4px;
+    overflow-x: auto; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
   }
-  .akm-used-car-product .akm-gallery-thumbs::-webkit-scrollbar { height: 6px; }
-  .akm-used-car-product .akm-gallery-thumbs::-webkit-scrollbar-thumb {
-    background: var(--akm-border);
-    border-radius: 6px;
+  .akm-pdp .pdp-thumbs::-webkit-scrollbar { height: 5px; }
+  .akm-pdp .pdp-thumbs::-webkit-scrollbar-thumb { background: var(--pdp-border); border-radius: 5px; }
+  .akm-pdp .pdp-thumb-btn {
+    flex: 0 0 auto; width: 80px; height: 60px; padding: 0;
+    border: 2px solid var(--pdp-border); border-radius: 10px;
+    overflow: hidden; background: var(--pdp-card); cursor: pointer;
+    scroll-snap-align: start; transition: border-color .15s, transform .15s;
   }
-  .akm-used-car-product .akm-thumb {
-    flex: 0 0 auto;
-    width: 88px;
-    height: 66px;
-    padding: 0;
-    border: 2px solid var(--akm-border);
-    border-radius: 10px;
-    overflow: hidden;
-    background: var(--akm-card);
-    cursor: pointer;
-    scroll-snap-align: start;
-    transition: border-color .15s ease, transform .15s ease;
+  .akm-pdp .pdp-thumb-btn:hover { transform: translateY(-1px); }
+  .akm-pdp .pdp-thumb-btn.is-active { border-color: var(--pdp-accent); }
+  .akm-pdp .pdp-thumb-btn img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* ── Summary card ── */
+  .akm-pdp .pdp-summary {
+    background: var(--pdp-card); border: 1px solid var(--pdp-border);
+    border-radius: 16px; padding: 22px;
+    box-shadow: 0 2px 16px rgba(15,23,42,.06);
+    position: relative; overflow: hidden;
   }
-  .akm-used-car-product .akm-thumb:hover { transform: translateY(-1px); }
-  .akm-used-car-product .akm-thumb.is-active { border-color: var(--akm-accent); }
-  .akm-used-car-product .akm-thumb img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .akm-pdp .pdp-summary::before {
+    content: ""; position: absolute; inset-inline-start: 0; top: 0;
+    width: 5px; height: 100%; background: var(--pdp-accent);
   }
 
-  /* Summary card */
-  .akm-used-car-product .akm-summary-card {
-    background: linear-gradient(180deg, var(--akm-card) 0%, rgba(248, 250, 252, .82) 100%);
-    border: 1px solid var(--akm-border);
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 12px 30px rgba(15, 23, 42, .06);
-    position: relative;
-    overflow: hidden;
+  .akm-pdp .pdp-condition-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(212,160,23,.1); color: var(--pdp-accent);
+    font-size: 12px; font-weight: 800; padding: 5px 10px;
+    border-radius: 999px; margin-bottom: 10px;
   }
-  .akm-used-car-product .akm-summary-card::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0;
-    width: 5px;
-    height: 100%;
-    background: var(--akm-accent);
+  .akm-pdp .pdp-condition-badge svg { width: 13px; height: 13px; }
+
+  .akm-pdp .pdp-h1 {
+    font-size: 24px; font-weight: 900; line-height: 1.3;
+    color: var(--pdp-ink); margin: 0 0 4px;
   }
-  .akm-used-car-product .akm-summary-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 10px;
+
+  .akm-pdp .pdp-vendor {
+    font-size: 13px; color: var(--pdp-mute); margin-bottom: 14px;
   }
-  .akm-used-car-product .akm-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(212, 160, 23, .12);
-    color: var(--akm-accent);
-    font-size: 12px;
-    font-weight: 800;
-    padding: 6px 10px;
-    border-radius: 999px;
-    letter-spacing: .2px;
-    white-space: nowrap;
+  .akm-pdp .pdp-vendor strong { color: var(--pdp-ink); font-weight: 700; }
+
+  .akm-pdp .pdp-price-card {
+    background: var(--pdp-spec-bg); border: 1px solid var(--pdp-border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
   }
-  .akm-used-car-product .akm-title {
-    font-size: 22px;
-    line-height: 1.35;
-    font-weight: 900;
-    color: var(--akm-text);
-    margin: 0 0 6px;
+  .akm-pdp .pdp-price-label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--pdp-mute); margin-bottom: 2px;
   }
-  .akm-used-car-product .akm-vendor {
-    font-size: 13px;
-    color: var(--akm-muted);
+  .akm-pdp .pdp-price-value {
+    font-size: 30px; font-weight: 900; color: var(--pdp-accent);
+    letter-spacing: -.5px; line-height: 1.2;
+  }
+
+  /* Key specs — 2-col grid inside summary */
+  .akm-pdp .pdp-key-specs {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px; margin-bottom: 14px;
+  }
+  .akm-pdp .pdp-ks {
+    background: var(--pdp-spec-bg); border: 1px solid var(--pdp-border);
+    border-radius: 12px; padding: 12px; display: flex;
+    align-items: flex-start; gap: 10px;
+  }
+  .akm-pdp .pdp-ks-icon {
+    width: 34px; height: 34px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--pdp-card); border: 1px solid var(--pdp-border);
+    border-radius: 10px; color: var(--pdp-accent);
+  }
+  .akm-pdp .pdp-ks-icon svg { width: 18px; height: 18px; }
+  .akm-pdp .pdp-ks-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .akm-pdp .pdp-ks-label {
+    font-size: 11px; font-weight: 700; color: var(--pdp-mute);
+    line-height: 1.3;
+  }
+  .akm-pdp .pdp-ks-val {
+    font-size: 15px; font-weight: 800; color: var(--pdp-ink);
+    line-height: 1.35; word-break: break-word;
+  }
+
+  /* Location strip */
+  .akm-pdp .pdp-location {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(212,160,23,.07); border: 1px solid rgba(212,160,23,.2);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 16px;
+    font-size: 13px; font-weight: 700; color: var(--pdp-ink);
+  }
+  .akm-pdp .pdp-location svg { width: 16px; height: 16px; color: var(--pdp-accent); flex-shrink: 0; }
+
+  /* CTAs */
+  .akm-pdp .pdp-ctas {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
     margin-bottom: 14px;
   }
-  .akm-used-car-product .akm-price-box {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 14px;
-    padding: 14px;
-    margin: 14px 0;
-  }
-  .akm-used-car-product .akm-price-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--akm-muted);
-    margin-bottom: 3px;
-  }
-  .akm-used-car-product .akm-price {
-    font-size: 28px;
-    font-weight: 900;
-    color: var(--akm-accent);
-    letter-spacing: -.4px;
-    line-height: 1.25;
-  }
-  .akm-used-car-product .akm-summary-specs {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin: 14px 0;
-  }
-  .akm-used-car-product .akm-summary-spec {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 12px;
-    padding: 10px 11px;
-    min-height: 70px;
-  }
-  .akm-used-car-product .akm-summary-spec-label {
-    display: block;
-    color: var(--akm-muted);
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 3px;
-  }
-  .akm-used-car-product .akm-summary-spec-value {
-    display: block;
-    color: var(--akm-text);
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1.4;
-    word-break: break-word;
-  }
-  .akm-used-car-product .akm-location {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--akm-text);
-    background: rgba(212, 160, 23, .08);
-    border: 1px solid rgba(212, 160, 23, .22);
-    padding: 10px 12px;
-    border-radius: 12px;
-    margin: 10px 0 14px;
-    font-weight: 700;
-  }
-  .akm-used-car-product .akm-location svg { width: 16px; height: 16px; color: var(--akm-accent); flex-shrink: 0; }
-  .akm-used-car-product .akm-summary-trust {
-    display: grid;
-    gap: 7px;
-    margin: 12px 0 0;
-    padding-top: 12px;
-    border-top: 1px solid var(--akm-border);
-  }
-  .akm-used-car-product .akm-summary-trust-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--akm-text);
-    font-size: 12.5px;
-    font-weight: 700;
-  }
-  .akm-used-car-product .akm-summary-trust-item svg {
-    width: 16px;
-    height: 16px;
-    color: var(--akm-accent);
-    flex-shrink: 0;
-  }
+  .akm-pdp .pdp-ctas .pdp-cta-full { grid-column: 1 / -1; }
 
-  /* CTA group */
-  .akm-used-car-product .akm-cta-group {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-top: 8px;
-  }
-  .akm-used-car-product .akm-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    min-height: 48px;
-    padding: 12px 16px;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    transition: transform .12s ease, box-shadow .15s ease, opacity .15s ease;
+  .akm-pdp .pdp-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; width: 100%; min-height: 50px; padding: 12px 14px;
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; text-decoration: none;
+    cursor: pointer; transition: transform .12s, box-shadow .15s;
     line-height: 1;
   }
-  .akm-used-car-product .akm-btn:hover { transform: translateY(-1px); }
-  .akm-used-car-product .akm-btn:active { transform: translateY(0); }
-  .akm-used-car-product .akm-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-  .akm-used-car-product .akm-btn-whatsapp {
-    background: var(--akm-wa-bg);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(37, 211, 102, .25);
+  .akm-pdp .pdp-btn:hover { transform: translateY(-1px); }
+  .akm-pdp .pdp-btn:active { transform: translateY(0); }
+  .akm-pdp .pdp-btn svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+  .akm-pdp .pdp-btn--wa  { background: var(--pdp-wa); color: #fff; box-shadow: 0 4px 14px rgba(37,211,102,.22); }
+  .akm-pdp .pdp-btn--call { background: var(--pdp-call); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.2); }
+  .akm-pdp .pdp-btn--book { background: var(--pdp-btn-bg); color: var(--pdp-btn-ink); }
+
+  /* Trust bullets */
+  .akm-pdp .pdp-trust-list {
+    display: flex; flex-direction: column; gap: 6px;
+    padding-top: 12px; border-top: 1px solid var(--pdp-border);
   }
-  .akm-used-car-product .akm-btn-call {
-    background: var(--akm-call-bg);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, .22);
+  .akm-pdp .pdp-trust-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 700; color: var(--pdp-ink);
   }
-  .akm-used-car-product .akm-btn-primary {
-    background: var(--akm-btn-bg);
-    color: var(--akm-btn-text);
-    border-color: var(--akm-btn-bg);
+  .akm-pdp .pdp-trust-item svg { width: 15px; height: 15px; color: var(--pdp-accent); flex-shrink: 0; }
+
+  /* ── Below-fold content ── */
+  .akm-pdp .pdp-content {
+    display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 4px;
   }
 
-  /* Sections */
-  .akm-used-car-product .akm-section { margin-bottom: 28px; }
-  .akm-used-car-product .akm-section-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--akm-text);
-    margin: 0 0 14px;
-    position: relative;
-    padding-inline-start: 12px;
+  .akm-pdp .pdp-card {
+    background: var(--pdp-card); border: 1px solid var(--pdp-border);
+    border-radius: var(--pdp-radius); padding: 20px;
+    box-shadow: 0 1px 4px rgba(15,23,42,.03);
   }
-  .akm-used-car-product .akm-section-title::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 4px;
-    bottom: 4px;
-    width: 4px;
-    background: var(--akm-accent);
-    border-radius: 4px;
+  .akm-pdp .pdp-card-title {
+    font-size: 17px; font-weight: 800; color: var(--pdp-ink);
+    margin: 0 0 14px; padding-inline-start: 12px; position: relative;
   }
-  .akm-used-car-product .akm-card {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+  .akm-pdp .pdp-card-title::before {
+    content: ""; position: absolute; inset-inline-start: 0;
+    top: 3px; bottom: 3px; width: 4px;
+    background: var(--pdp-accent); border-radius: 4px;
   }
 
-  /* Quick specs grid */
-  .akm-used-car-product .akm-specs-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  /* Tech rows */
+  .akm-pdp .pdp-tech-rows { display: flex; flex-direction: column; gap: 0; }
+  .akm-pdp .pdp-tech-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px; gap: 12px; font-size: 14px;
+    border-bottom: 1px solid var(--pdp-border);
   }
-  .akm-used-car-product .akm-spec-card {
-    background: var(--akm-spec-bg);
-    border: 1px solid var(--akm-border);
-    border-radius: 14px;
-    padding: 14px 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    min-height: 96px;
-  }
-  .akm-used-car-product .akm-spec-icon {
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 10px;
-    color: var(--akm-accent);
-  }
-  .akm-used-car-product .akm-spec-icon svg { width: 18px; height: 18px; }
-  .akm-used-car-product .akm-spec-label {
-    font-size: 12px;
-    color: var(--akm-muted);
-    font-weight: 600;
-  }
-  .akm-used-car-product .akm-spec-value {
-    font-size: 15px;
-    color: var(--akm-text);
-    font-weight: 700;
-    word-break: break-word;
-  }
+  .akm-pdp .pdp-tech-row:last-child { border-bottom: 0; }
+  .akm-pdp .pdp-tech-row:nth-child(odd) { background: var(--pdp-spec-bg); border-radius: 8px; }
+  .akm-pdp .pdp-tech-lbl { color: var(--pdp-mute); font-weight: 600; flex-shrink: 0; }
+  .akm-pdp .pdp-tech-val { color: var(--pdp-ink); font-weight: 700; text-align: end; word-break: break-word; }
 
-  /* Features */
-  .akm-used-car-product .akm-features {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  /* Features pills */
+  .akm-pdp .pdp-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .akm-pdp .pdp-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--pdp-spec-bg); border: 1px solid var(--pdp-border);
+    padding: 7px 13px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; color: var(--pdp-ink);
   }
-  .akm-used-car-product .akm-feature-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--akm-spec-bg);
-    color: var(--akm-text);
-    border: 1px solid var(--akm-border);
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .akm-used-car-product .akm-feature-chip::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    background: var(--akm-accent);
-    border-radius: 50%;
+  .akm-pdp .pdp-pill::before {
+    content: ""; width: 6px; height: 6px;
+    background: var(--pdp-accent); border-radius: 50%;
   }
 
   /* Description */
-  .akm-used-car-product .akm-description {
-    font-size: 15px;
-    line-height: 1.85;
-    color: var(--akm-text);
+  .akm-pdp .pdp-desc {
+    font-size: 15px; line-height: 1.85; color: var(--pdp-ink);
     word-wrap: break-word;
   }
-  .akm-used-car-product .akm-description p { margin: 0 0 12px; }
-  .akm-used-car-product .akm-description p:last-child { margin-bottom: 0; }
-  .akm-used-car-product .akm-description ul,
-  .akm-used-car-product .akm-description ol {
-    padding-inline-start: 22px;
-    margin: 0 0 12px;
-  }
-  .akm-used-car-product .akm-description li { margin-bottom: 6px; }
-  .akm-used-car-product .akm-description a {
-    color: var(--akm-accent);
-    text-decoration: underline;
-  }
-  .akm-used-car-product .akm-description img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 12px;
-  }
-
-  /* Technical details */
-  .akm-used-car-product .akm-tech-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  .akm-used-car-product .akm-tech-row {
-    display: grid;
-    grid-template-columns: minmax(120px, 38%) 1fr;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--akm-border);
-    font-size: 14px;
-  }
-  .akm-used-car-product .akm-tech-row:last-child { border-bottom: 0; }
-  .akm-used-car-product .akm-tech-row:nth-child(odd) { background: var(--akm-spec-bg); }
-  .akm-used-car-product .akm-tech-label {
-    color: var(--akm-muted);
-    font-weight: 600;
-  }
-  .akm-used-car-product .akm-tech-value {
-    color: var(--akm-text);
-    font-weight: 700;
-    word-break: break-word;
-  }
-
-  /* ===== Two-column premium layout ===== */
-  .akm-used-car-product .akm-detail-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    margin-top: 8px;
-  }
-
-  /* Sidebar: specs, features, trust */
-  .akm-used-car-product .akm-detail-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .akm-used-car-product .akm-sidebar-section {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
-  }
-  .akm-used-car-product .akm-sidebar-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--akm-text);
-    margin: 0 0 12px;
-    padding-inline-start: 10px;
-    position: relative;
-  }
-  .akm-used-car-product .akm-sidebar-title::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 3px;
-    bottom: 3px;
-    width: 3px;
-    background: var(--akm-accent);
-    border-radius: 3px;
-  }
-
-  /* Compact tech specs */
-  .akm-used-car-product .akm-tech-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .akm-used-car-product .akm-tech-row-compact {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 9px 12px;
-    background: var(--akm-spec-bg);
-    border: 1px solid var(--akm-border);
-    border-radius: 10px;
-    font-size: 13px;
-    gap: 12px;
-  }
-  .akm-used-car-product .akm-tech-label-compact {
-    color: var(--akm-muted);
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-  .akm-used-car-product .akm-tech-value-compact {
-    color: var(--akm-text);
-    font-weight: 700;
-    text-align: end;
-    word-break: break-word;
-  }
-
-  /* Compact features */
-  .akm-used-car-product .akm-features-compact {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-  }
-  .akm-used-car-product .akm-feature-pill {
-    display: inline-flex;
-    align-items: center;
-    background: var(--akm-spec-bg);
-    color: var(--akm-text);
-    border: 1px solid var(--akm-border);
-    padding: 6px 11px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.3;
-  }
-
-  /* Compact trust */
-  .akm-used-car-product .akm-trust-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-  }
-  .akm-used-car-product .akm-trust-item-compact {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--akm-text);
-    font-weight: 600;
-  }
-  .akm-used-car-product .akm-trust-check {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    color: var(--akm-accent);
-  }
-
-  /* Main content area */
-  .akm-used-car-product .akm-detail-main {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-  .akm-used-car-product .akm-main-section {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
-  }
-  .akm-used-car-product .akm-main-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--akm-text);
-    margin: 0 0 14px;
-    padding-inline-start: 11px;
-    position: relative;
-  }
-  .akm-used-car-product .akm-main-title::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    top: 3px;
-    bottom: 3px;
-    width: 3px;
-    background: var(--akm-accent);
-    border-radius: 3px;
-  }
-
-  /* Overview card */
-  .akm-used-car-product .akm-overview-card {
-    background: var(--akm-spec-bg);
-    border: 1px solid var(--akm-border);
-    border-radius: 12px;
-    padding: 16px;
-  }
-  .akm-used-car-product .akm-overview-content {
-    font-size: 14px;
-    line-height: 1.75;
-    color: var(--akm-text);
-  }
-  .akm-used-car-product .akm-overview-content p { margin: 0 0 12px; }
-  .akm-used-car-product .akm-overview-content p:last-child { margin-bottom: 0; }
-  .akm-used-car-product .akm-overview-content ul,
-  .akm-used-car-product .akm-overview-content ol {
-    padding-inline-start: 20px;
-    margin: 0 0 12px;
-  }
-  .akm-used-car-product .akm-overview-content li { margin-bottom: 5px; }
-
-  /* Highlights grid */
-  .akm-used-car-product .akm-highlights-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .akm-used-car-product .akm-highlight-item {
-    background: var(--akm-spec-bg);
-    border: 1px solid var(--akm-border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .akm-used-car-product .akm-highlight-label {
-    font-size: 12px;
-    color: var(--akm-muted);
-    font-weight: 600;
-  }
-  .akm-used-car-product .akm-highlight-value {
-    font-size: 15px;
-    color: var(--akm-text);
-    font-weight: 800;
-  }
+  .akm-pdp .pdp-desc p { margin: 0 0 12px; }
+  .akm-pdp .pdp-desc p:last-child { margin-bottom: 0; }
+  .akm-pdp .pdp-desc ul, .akm-pdp .pdp-desc ol { padding-inline-start: 22px; margin: 0 0 12px; }
+  .akm-pdp .pdp-desc li { margin-bottom: 5px; }
+  .akm-pdp .pdp-desc a { color: var(--pdp-accent); text-decoration: underline; }
+  .akm-pdp .pdp-desc img { max-width: 100%; height: auto; border-radius: 12px; }
 
   /* Inspection notice */
-  .akm-used-car-product .akm-inspection-notice {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    background: rgba(212, 160, 23, .08);
-    border: 1px solid rgba(212, 160, 23, .25);
-    border-radius: 12px;
-    padding: 14px 16px;
+  .akm-pdp .pdp-notice {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: rgba(212,160,23,.07); border: 1px solid rgba(212,160,23,.22);
+    border-radius: 12px; padding: 14px 16px;
   }
-  .akm-used-car-product .akm-inspection-icon {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    color: var(--akm-accent);
+  .akm-pdp .pdp-notice svg { width: 20px; height: 20px; color: var(--pdp-accent); flex-shrink: 0; margin-top: 2px; }
+  .akm-pdp .pdp-notice-text { font-size: 13px; line-height: 1.65; color: var(--pdp-ink); }
+  .akm-pdp .pdp-notice-text strong { font-weight: 800; color: var(--pdp-accent); }
+
+  /* Bottom CTA */
+  .akm-pdp .pdp-bottom-cta {
+    background: var(--pdp-card); border: 1px solid var(--pdp-border);
+    border-radius: 16px; padding: 20px; margin-top: 4px;
   }
-  .akm-used-car-product .akm-inspection-icon svg {
-    width: 100%;
-    height: 100%;
+  .akm-pdp .pdp-bottom-cta-title {
+    font-size: 17px; font-weight: 800; color: var(--pdp-ink); margin: 0 0 4px;
   }
-  .akm-used-car-product .akm-inspection-text {
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--akm-text);
-  }
-  .akm-used-car-product .akm-inspection-text strong {
-    font-weight: 800;
-    color: var(--akm-accent);
+  .akm-pdp .pdp-bottom-cta-sub {
+    font-size: 13px; color: var(--pdp-mute); margin: 0 0 12px;
   }
 
-  /* Trust */
-  .akm-used-car-product .akm-trust-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .akm-used-car-product .akm-trust-card {
-    background: var(--akm-trust-bg);
-    border: 1px solid var(--akm-border);
-    border-radius: 14px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .akm-used-car-product .akm-trust-icon {
-    width: 38px;
-    height: 38px;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 10px;
-    color: var(--akm-accent);
-  }
-  .akm-used-car-product .akm-trust-icon svg { width: 20px; height: 20px; }
-  .akm-used-car-product .akm-trust-body { display: flex; flex-direction: column; gap: 2px; }
-  .akm-used-car-product .akm-trust-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--akm-text);
-  }
-  .akm-used-car-product .akm-trust-text {
-    font-size: 13px;
-    color: var(--akm-muted);
-  }
-
-  /* Footer CTA bar (in-flow, not sticky) */
-  .akm-used-car-product .akm-bottom-cta {
-    background: var(--akm-card);
-    border: 1px solid var(--akm-border);
-    border-radius: 16px;
-    padding: 18px;
-    display: grid;
-    gap: 10px;
-    margin-top: 8px;
-  }
-  .akm-used-car-product .akm-bottom-cta-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--akm-text);
-    margin: 0 0 4px;
-  }
-  .akm-used-car-product .akm-bottom-cta-text {
-    font-size: 13px;
-    color: var(--akm-muted);
-    margin: 0 0 6px;
-  }
-
-  /* ===== Tablet ===== */
+  /* ── Tablet (640+) ── */
   @media (min-width: 640px) {
-    .akm-used-car-product { padding: 24px 0 64px; }
-    .akm-used-car-product .akm-title { font-size: 26px; }
-    .akm-used-car-product .akm-price { font-size: 30px; }
-    .akm-used-car-product .akm-specs-grid { grid-template-columns: repeat(3, 1fr); }
-    .akm-used-car-product .akm-cta-group { grid-template-columns: repeat(2, 1fr); }
-    .akm-used-car-product .akm-cta-group .akm-btn-primary { grid-column: 1 / -1; }
-    .akm-used-car-product .akm-thumb { width: 104px; height: 78px; }
-    .akm-used-car-product .akm-section-title { font-size: 20px; }
-    .akm-used-car-product .akm-highlights-grid { grid-template-columns: repeat(4, 1fr); }
+    .akm-pdp { padding: 24px 0 64px; }
+    .akm-pdp .pdp-h1 { font-size: 26px; }
+    .akm-pdp .pdp-price-value { font-size: 32px; }
+    .akm-pdp .pdp-key-specs { grid-template-columns: repeat(2, 1fr); }
+    .akm-pdp .pdp-thumb-btn { width: 96px; height: 72px; }
   }
 
-  /* ===== Desktop ===== */
+  /* ── Desktop (960+) ── */
   @media (min-width: 960px) {
-    .akm-used-car-product .akm-hero {
+    .akm-pdp .pdp-hero {
       grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-      gap: 28px;
-      align-items: start;
+      gap: 28px; align-items: start;
     }
-    .akm-used-car-product .akm-specs-grid { grid-template-columns: repeat(6, 1fr); }
-    .akm-used-car-product .akm-summary-card {
-      position: sticky;
-      top: 24px;
-      padding: 24px;
+    .akm-pdp .pdp-summary { position: sticky; top: 24px; padding: 26px; }
+    .akm-pdp .pdp-h1 { font-size: 28px; }
+    .akm-pdp .pdp-content {
+      grid-template-columns: 1fr 340px; gap: 24px; align-items: start;
     }
-    .akm-used-car-product .akm-title { font-size: 28px; }
-
-    /* Two-column layout: sidebar left, main right */
-    .akm-used-car-product .akm-detail-grid {
-      grid-template-columns: 320px 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-    .akm-used-car-product .akm-detail-sidebar {
-      position: sticky;
-      top: 24px;
-    }
-    .akm-used-car-product .akm-highlights-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .akm-pdp .pdp-content-side { position: sticky; top: 24px; }
+    .akm-pdp .pdp-key-specs { grid-template-columns: repeat(2, 1fr); }
   }
 
-
-  /* ===== Mobile safety fixes ===== */
+  /* ── Mobile (<640) ── */
   @media (max-width: 639px) {
-    .akm-used-car-product {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-      padding: 10px 0 40px;
+    .akm-pdp {
+      padding: 12px 0 40px; width: 100%; max-width: 100%; overflow-x: hidden;
     }
+    .akm-pdp .pdp-wrap {
+      padding-inline: 12px; width: 100%; max-width: 100%; overflow-x: hidden;
+    }
+    .akm-pdp .pdp-crumbs { font-size: 12px; margin-bottom: 12px; }
+    .akm-pdp .pdp-hero { gap: 14px; margin-bottom: 18px; }
 
-    .akm-used-car-product .akm-container {
-      width: 100%;
-      max-width: 100%;
-      padding-inline: 12px;
-      overflow-x: hidden;
-    }
+    .akm-pdp .pdp-gallery-frame { border-radius: 12px; }
+    .akm-pdp .pdp-main-img { aspect-ratio: 16/10; }
+    .akm-pdp .pdp-thumbs { padding: 8px 2px; gap: 6px; }
+    .akm-pdp .pdp-thumb-btn { width: 72px; height: 54px; border-radius: 8px; }
 
-    .akm-used-car-product .akm-breadcrumb {
-      font-size: 12px;
-      margin-bottom: 10px;
-      max-width: 100%;
-      overflow: hidden;
+    .akm-pdp .pdp-summary {
+      position: static; padding: 16px; border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(15,23,42,.05);
     }
+    .akm-pdp .pdp-summary::before { width: 4px; }
 
-    .akm-used-car-product .akm-hero,
-    .akm-used-car-product .akm-detail-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 14px;
-      width: 100%;
-      max-width: 100%;
-      margin-bottom: 18px;
-    }
+    .akm-pdp .pdp-h1 { font-size: 21px; word-break: break-word; }
+    .akm-pdp .pdp-vendor { font-size: 12px; margin-bottom: 10px; }
 
-    .akm-used-car-product .akm-gallery,
-    .akm-used-car-product .akm-gallery-main,
-    .akm-used-car-product .akm-summary,
-    .akm-used-car-product .akm-summary-card,
-    .akm-used-car-product .akm-detail-sidebar,
-    .akm-used-car-product .akm-detail-main,
-    .akm-used-car-product .akm-main-section,
-    .akm-used-car-product .akm-sidebar-section,
-    .akm-used-car-product .akm-bottom-cta {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-    }
+    .akm-pdp .pdp-price-card { padding: 12px 14px; margin-bottom: 12px; }
+    .akm-pdp .pdp-price-value { font-size: clamp(24px, 7vw, 30px); }
 
-    .akm-used-car-product .akm-gallery-main {
-      border-radius: 14px;
-    }
+    .akm-pdp .pdp-key-specs { grid-template-columns: repeat(2, 1fr); gap: 7px; margin-bottom: 12px; }
+    .akm-pdp .pdp-ks { padding: 10px; gap: 8px; border-radius: 10px; }
+    .akm-pdp .pdp-ks-icon { width: 30px; height: 30px; border-radius: 8px; }
+    .akm-pdp .pdp-ks-icon svg { width: 16px; height: 16px; }
+    .akm-pdp .pdp-ks-label { font-size: 10.5px; }
+    .akm-pdp .pdp-ks-val { font-size: 14px; }
 
-    .akm-used-car-product .akm-main-img {
-      width: 100%;
-      max-width: 100%;
-      aspect-ratio: 16 / 10;
-      object-fit: cover;
-    }
+    .akm-pdp .pdp-location { font-size: 12.5px; padding: 9px 10px; margin-bottom: 12px; }
 
-    .akm-used-car-product .akm-gallery-thumbs {
-      width: 100%;
-      max-width: 100%;
-      padding: 8px 0 2px;
-      gap: 7px;
-      overflow-x: auto;
-    }
+    .akm-pdp .pdp-ctas { gap: 7px; margin-bottom: 12px; }
+    .akm-pdp .pdp-btn { min-height: 46px; font-size: 14px; border-radius: 11px; }
 
-    .akm-used-car-product .akm-thumb {
-      width: 78px;
-      height: 58px;
-      border-radius: 9px;
-    }
+    .akm-pdp .pdp-trust-item { font-size: 12px; }
 
-    .akm-used-car-product .akm-summary-card {
-      position: static;
-      padding: 14px;
-      border-radius: 15px;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 6px 18px rgba(15, 23, 42, .05);
-    }
+    .akm-pdp .pdp-content { gap: 14px; }
+    .akm-pdp .pdp-card { padding: 16px; border-radius: 13px; }
+    .akm-pdp .pdp-card-title { font-size: 15px; margin-bottom: 12px; }
+    .akm-pdp .pdp-tech-row { padding: 10px 12px; font-size: 13px; }
+    .akm-pdp .pdp-pill { font-size: 12px; padding: 6px 10px; }
+    .akm-pdp .pdp-desc { font-size: 14px; }
+    .akm-pdp .pdp-notice { padding: 12px 14px; }
+    .akm-pdp .pdp-notice-text { font-size: 12.5px; }
 
-    .akm-used-car-product .akm-summary-card::before {
-      width: 4px;
-    }
+    .akm-pdp .pdp-bottom-cta { padding: 16px; border-radius: 13px; }
+    .akm-pdp .pdp-bottom-cta-title { font-size: 15px; }
 
-    .akm-used-car-product .akm-title {
-      font-size: 21px;
-      line-height: 1.35;
-      margin-bottom: 4px;
-      word-break: break-word;
+    .akm-pdp .pdp-gallery-frame,
+    .akm-pdp .pdp-summary,
+    .akm-pdp .pdp-card,
+    .akm-pdp .pdp-bottom-cta {
+      width: 100%; max-width: 100%; min-width: 0;
     }
-
-    .akm-used-car-product .akm-vendor {
-      font-size: 12px;
-      margin-bottom: 10px;
-    }
-
-    .akm-used-car-product .akm-price-box {
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 12px;
-    }
-
-    .akm-used-car-product .akm-price {
-      font-size: clamp(22px, 7vw, 28px);
-      line-height: 1.25;
-      letter-spacing: 0;
-      word-break: break-word;
-    }
-
-    .akm-used-car-product .akm-summary-specs,
-    .akm-used-car-product .akm-specs-grid,
-    .akm-used-car-product .akm-highlights-grid {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 8px;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .akm-used-car-product .akm-summary-spec,
-    .akm-used-car-product .akm-spec-card,
-    .akm-used-car-product .akm-highlight-item {
-      min-width: 0;
-      min-height: auto;
-      padding: 10px 12px;
-      border-radius: 12px;
-    }
-
-    .akm-used-car-product .akm-summary-spec-label,
-    .akm-used-car-product .akm-highlight-label {
-      font-size: 11px;
-    }
-
-    .akm-used-car-product .akm-summary-spec-value,
-    .akm-used-car-product .akm-highlight-value,
-    .akm-used-car-product .akm-spec-value {
-      font-size: 14px;
-      line-height: 1.45;
-      overflow-wrap: anywhere;
-    }
-
-    .akm-used-car-product .akm-location {
-      align-items: flex-start;
-      font-size: 12.5px;
-      padding: 9px 10px;
-      margin: 10px 0;
-    }
-
-    .akm-used-car-product .akm-cta-group {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 8px;
-      width: 100%;
-    }
-
-    .akm-used-car-product .akm-btn {
-      min-height: 44px;
-      font-size: 14px;
-      border-radius: 11px;
-    }
-
-    .akm-used-car-product .akm-summary-trust {
-      gap: 6px;
-      padding-top: 10px;
-    }
-
-    .akm-used-car-product .akm-summary-trust-item,
-    .akm-used-car-product .akm-trust-item-compact {
-      font-size: 12.5px;
-      line-height: 1.5;
-      align-items: flex-start;
-    }
-
-    .akm-used-car-product .akm-section {
-      margin-bottom: 20px;
-    }
-
-    .akm-used-car-product .akm-section-title,
-    .akm-used-car-product .akm-main-title,
-    .akm-used-car-product .akm-sidebar-title {
-      font-size: 15px;
-      margin-bottom: 10px;
-    }
-
-    .akm-used-car-product .akm-main-section,
-    .akm-used-car-product .akm-sidebar-section,
-    .akm-used-car-product .akm-overview-card,
-    .akm-used-car-product .akm-bottom-cta {
-      padding: 14px;
-      border-radius: 13px;
-    }
-
-    .akm-used-car-product .akm-tech-row-compact {
-      align-items: flex-start;
-      padding: 9px 10px;
-      gap: 8px;
-    }
-
-    .akm-used-car-product .akm-tech-label-compact,
-    .akm-used-car-product .akm-tech-value-compact {
-      font-size: 12.5px;
-    }
-
-    .akm-used-car-product .akm-features-compact {
-      gap: 6px;
-    }
-
-    .akm-used-car-product .akm-feature-pill {
-      font-size: 11.5px;
-      padding: 6px 9px;
-    }
-
-    .akm-used-car-product .akm-overview-content {
-      font-size: 13.5px;
-      line-height: 1.75;
-    }
-
-    .akm-used-car-product img,
-    .akm-used-car-product svg {
-      max-width: 100%;
-    }
+    .akm-pdp img, .akm-pdp svg { max-width: 100%; }
   }
 
   @media (max-width: 380px) {
-    .akm-used-car-product .akm-container {
-      padding-inline: 10px;
-    }
-
-    .akm-used-car-product .akm-title {
-      font-size: 19px;
-    }
-
-    .akm-used-car-product .akm-price {
-      font-size: 22px;
-    }
-
-    .akm-used-car-product .akm-summary-card,
-    .akm-used-car-product .akm-main-section,
-    .akm-used-car-product .akm-sidebar-section,
-    .akm-used-car-product .akm-overview-card,
-    .akm-used-car-product .akm-bottom-cta {
-      padding: 12px;
-    }
+    .akm-pdp .pdp-wrap { padding-inline: 10px; }
+    .akm-pdp .pdp-h1 { font-size: 19px; }
+    .akm-pdp .pdp-price-value { font-size: 22px; }
+    .akm-pdp .pdp-summary, .akm-pdp .pdp-card, .akm-pdp .pdp-bottom-cta { padding: 14px; }
   }
 
-
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .akm-used-car-product .akm-btn,
-    .akm-used-car-product .akm-thumb { transition: none; }
-    .akm-used-car-product .akm-btn:hover,
-    .akm-used-car-product .akm-thumb:hover { transform: none; }
+    .akm-pdp .pdp-btn, .akm-pdp .pdp-thumb-btn { transition: none; }
+    .akm-pdp .pdp-btn:hover, .akm-pdp .pdp-thumb-btn:hover { transform: none; }
   }
 </style>
 
-<section class="akm-used-car-product" data-section-id="{{ section.id }}" aria-label="تفاصيل السيارة المستعملة">
-  <div class="akm-container">
+<section class="akm-pdp" data-section-id="{{ section.id }}" aria-label="تفاصيل السيارة المستعملة">
+  <div class="pdp-wrap">
 
-    {%- comment %} ===== Breadcrumb / back to listing ===== {%- endcomment %}
-    <nav class="akm-breadcrumb" aria-label="مسار التصفح">
+    {%- comment -%} ── Breadcrumb ── {%- endcomment -%}
+    <nav class="pdp-crumbs" aria-label="مسار التصفح">
       <a href="{{ routes.root_url }}">الرئيسية</a>
-      <span class="akm-sep">/</span>
+      <span class="sep">/</span>
       <a href="{{ listing_url }}">سيارات مستعملة</a>
-      <span class="akm-sep">/</span>
-      <span class="akm-current">{{ product.title }}</span>
+      <span class="sep">/</span>
+      <span class="cur">{{ product.title }}</span>
     </nav>
 
-    {%- comment %} ===== Hero: Gallery + Summary ===== {%- endcomment %}
-    <div class="akm-hero">
+    {%- comment -%} ── Hero: Gallery + Summary ── {%- endcomment -%}
+    <div class="pdp-hero">
 
-      <div class="akm-gallery">
-        <div class="akm-gallery-main">
+      {%- comment -%} Gallery {%- endcomment -%}
+      <div class="pdp-gallery">
+        <div class="pdp-gallery-frame">
           {%- if product.featured_image != blank -%}
-            <img
-              class="akm-main-img"
-              id="akm-main-img-{{ section.id }}"
+            <img class="pdp-main-img" id="akm-img-{{ section.id }}"
               src="{{ product.featured_image | image_url: width: 1200 }}"
               alt="{{ product.title | escape }}"
-              width="1200"
-              height="900"
-              fetchpriority="high"
-              decoding="async">
+              width="1200" height="900" fetchpriority="high" decoding="async">
           {%- else -%}
-            <div class="akm-main-img" style="display:flex;align-items:center;justify-content:center;background:var(--akm-spec-bg);color:var(--akm-muted);">
-              {{ 'product-1' | placeholder_svg_tag: 'akm-placeholder' }}
+            <div class="pdp-main-img" style="display:flex;align-items:center;justify-content:center;background:var(--pdp-spec-bg);color:var(--pdp-mute);">
+              {{ 'product-1' | placeholder_svg_tag: 'placeholder' }}
             </div>
           {%- endif -%}
         </div>
-
         {%- if product.images.size > 1 -%}
-          <div class="akm-gallery-thumbs" role="list" aria-label="معرض صور السيارة">
+          <div class="pdp-thumbs" role="list" aria-label="صور السيارة">
             {%- for image in product.images -%}
-              <button
-                type="button"
-                class="akm-thumb{% if forloop.first %} is-active{% endif %}"
+              <button type="button"
+                class="pdp-thumb-btn{% if forloop.first %} is-active{% endif %}"
                 data-src="{{ image | image_url: width: 1200 }}"
-                data-alt="{{ product.title | escape }} - صورة {{ forloop.index }}"
-                data-target="akm-main-img-{{ section.id }}"
-                aria-label="عرض الصورة رقم {{ forloop.index }}"
-                role="listitem">
-                <img
-                  src="{{ image | image_url: width: 220 }}"
-                  alt="{{ product.title | escape }} - صورة {{ forloop.index }}"
-                  width="220"
-                  height="165"
-                  loading="lazy"
-                  decoding="async">
+                data-alt="{{ product.title | escape }} - {{ forloop.index }}"
+                aria-label="صورة {{ forloop.index }}" role="listitem">
+                <img src="{{ image | image_url: width: 200 }}"
+                  alt="{{ product.title | escape }} - {{ forloop.index }}"
+                  width="200" height="150" loading="lazy" decoding="async">
               </button>
             {%- endfor -%}
           </div>
         {%- endif -%}
       </div>
 
-      <aside class="akm-summary" aria-label="ملخص السيارة">
-        <div class="akm-summary-card">
+      {%- comment -%} Summary card {%- endcomment -%}
+      <aside class="pdp-summary" aria-label="ملخص السيارة">
 
-          {%- if m_condition != blank -%}
-            <span class="akm-badge">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-              {{ m_condition }}
-            </span>
-          {%- endif -%}
+        {%- if m_condition != blank -%}
+          <span class="pdp-condition-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            {{ m_condition }}
+          </span>
+        {%- endif -%}
 
-          <h1 class="akm-title">{{ product.title }}</h1>
+        <h1 class="pdp-h1">{{ product.title }}</h1>
 
-          {%- if product.vendor != blank -%}
-            <div class="akm-vendor">{{ product.vendor }}</div>
-          {%- endif -%}
+        {%- if product.vendor != blank -%}
+          <div class="pdp-vendor">البائع: <strong>{{ product.vendor }}</strong></div>
+        {%- endif -%}
 
-          <div class="akm-price-box">
-            <span class="akm-price-label">السعر المطلوب</span>
-            <div class="akm-price" aria-label="السعر">{{ product.price | money }}</div>
-          </div>
-
-          <div class="akm-summary-specs" aria-label="ملخص مواصفات السيارة">
-            <div class="akm-summary-spec">
-              <span class="akm-summary-spec-label">سنة الصنع</span>
-              <span class="akm-summary-spec-value">{% if m_year != blank %}{{ m_year }}{% else %}غير محدد{% endif %}</span>
-            </div>
-            <div class="akm-summary-spec">
-              <span class="akm-summary-spec-label">الحالة</span>
-              <span class="akm-summary-spec-value">{% if m_condition != blank %}{{ m_condition }}{% else %}مستعملة{% endif %}</span>
-            </div>
-            <div class="akm-summary-spec">
-              <span class="akm-summary-spec-label">الكيلومترات</span>
-              <span class="akm-summary-spec-value">{% if m_mileage != blank %}{{ m_mileage }}{% else %}غير محدد{% endif %}</span>
-            </div>
-            <div class="akm-summary-spec">
-              <span class="akm-summary-spec-label">ناقل الحركة</span>
-              <span class="akm-summary-spec-value">{% if m_transmission != blank %}{{ m_transmission }}{% else %}غير محدد{% endif %}</span>
-            </div>
-            <div class="akm-summary-spec">
-              <span class="akm-summary-spec-label">نوع الوقود</span>
-              <span class="akm-summary-spec-value">{% if m_fuel != blank %}{{ m_fuel }}{% else %}غير محدد{% endif %}</span>
-            </div>
-            <div class="akm-summary-spec">
-              <span class="akm-summary-spec-label">الموقع</span>
-              <span class="akm-summary-spec-value">{% if m_location != blank %}{{ m_location }}{% else %}AKM Egypt{% endif %}</span>
-            </div>
-          </div>
-
-          <div class="akm-location">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>{% if m_location != blank %}متاحة للمعاينة في {{ m_location }}{% else %}متاحة للمعاينة لدى AKM{% endif %}</span>
-          </div>
-
-          <div class="akm-cta-group">
-            {%- if m_whatsapp != blank -%}
-              <a class="akm-btn akm-btn-whatsapp"
-                 href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_inquiry_enc }}"
-                 target="_blank" rel="noopener nofollow"
-                 aria-label="تواصل عبر واتساب">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.889 9.884"/></svg>
-                <span>واتساب</span>
-              </a>
-            {%- endif -%}
-
-            {%- if m_phone != blank -%}
-              <a class="akm-btn akm-btn-call"
-                 href="tel:{{ phone_clean }}"
-                 aria-label="اتصل بنا">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <span>اتصل الآن</span>
-              </a>
-            {%- endif -%}
-
-            {%- if m_whatsapp != blank -%}
-              <a class="akm-btn akm-btn-primary"
-                 href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_book_enc }}"
-                 target="_blank" rel="noopener nofollow"
-                 aria-label="احجز معاينة عبر واتساب">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>احجز معاينة</span>
-              </a>
-            {%- endif -%}
-          </div>
-
-          <div class="akm-summary-trust" aria-label="ملاحظات الثقة">
-            <div class="akm-summary-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>بيانات السيارة منظمة لسهولة المقارنة</span>
-            </div>
-            <div class="akm-summary-trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>إمكانية حجز معاينة قبل الشراء</span>
-            </div>
-          </div>
+        <div class="pdp-price-card">
+          <span class="pdp-price-label">السعر المطلوب</span>
+          <div class="pdp-price-value" aria-label="السعر">{{ product.price | money }}</div>
         </div>
-      </aside>
-    </div>
 
-    {%- comment %} ===== Quick Specs ===== {%- endcomment %}
-    {%- if has_quick_specs -%}
-      <section class="akm-section" aria-labelledby="akm-specs-title-{{ section.id }}">
-        <h2 class="akm-section-title" id="akm-specs-title-{{ section.id }}">المواصفات الرئيسية</h2>
-        <div class="akm-specs-grid">
+        {%- comment -%} Key specs grid — only cards with real data {%- endcomment -%}
+        <div class="pdp-key-specs" aria-label="المواصفات الأساسية">
+          {%- if m_condition != blank -%}
+            <div class="pdp-ks">
+              <span class="pdp-ks-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+              </span>
+              <span class="pdp-ks-text">
+                <span class="pdp-ks-label">الحالة</span>
+                <span class="pdp-ks-val">{{ m_condition }}</span>
+              </span>
+            </div>
+          {%- endif -%}
 
           {%- if m_year != blank -%}
-            <div class="akm-spec-card">
-              <span class="akm-spec-icon" aria-hidden="true">
+            <div class="pdp-ks">
+              <span class="pdp-ks-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </span>
-              <span class="akm-spec-label">سنة الصنع</span>
-              <span class="akm-spec-value">{{ m_year }}</span>
+              <span class="pdp-ks-text">
+                <span class="pdp-ks-label">سنة الصنع</span>
+                <span class="pdp-ks-val">{{ m_year }}</span>
+              </span>
             </div>
           {%- endif -%}
 
           {%- if m_mileage != blank -%}
-            <div class="akm-spec-card">
-              <span class="akm-spec-icon" aria-hidden="true">
+            <div class="pdp-ks">
+              <span class="pdp-ks-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M12 12l4-4"/><circle cx="12" cy="12" r=".5" fill="currentColor"/></svg>
               </span>
-              <span class="akm-spec-label">عدد الكيلومترات</span>
-              <span class="akm-spec-value">{{ m_mileage }}</span>
+              <span class="pdp-ks-text">
+                <span class="pdp-ks-label">الكيلومترات</span>
+                <span class="pdp-ks-val">{{ m_mileage }}</span>
+              </span>
             </div>
           {%- endif -%}
 
           {%- if m_transmission != blank -%}
-            <div class="akm-spec-card">
-              <span class="akm-spec-icon" aria-hidden="true">
+            <div class="pdp-ks">
+              <span class="pdp-ks-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M6 8v10M18 8v3a3 3 0 0 1-3 3h-3M12 14V8"/></svg>
               </span>
-              <span class="akm-spec-label">ناقل الحركة</span>
-              <span class="akm-spec-value">{{ m_transmission }}</span>
-            </div>
-          {%- endif -%}
-
-          {%- if m_fuel != blank -%}
-            <div class="akm-spec-card">
-              <span class="akm-spec-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="15" y2="22"/><line x1="4" y1="9" x2="14" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2 2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
+              <span class="pdp-ks-text">
+                <span class="pdp-ks-label">ناقل الحركة</span>
+                <span class="pdp-ks-val">{{ m_transmission }}</span>
               </span>
-              <span class="akm-spec-label">نوع الوقود</span>
-              <span class="akm-spec-value">{{ m_fuel }}</span>
-            </div>
-          {%- endif -%}
-
-          {%- if m_condition != blank -%}
-            <div class="akm-spec-card">
-              <span class="akm-spec-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-              </span>
-              <span class="akm-spec-label">الحالة</span>
-              <span class="akm-spec-value">{{ m_condition }}</span>
             </div>
           {%- endif -%}
 
           {%- if m_location != blank -%}
-            <div class="akm-spec-card">
-              <span class="akm-spec-icon" aria-hidden="true">
+            <div class="pdp-ks">
+              <span class="pdp-ks-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               </span>
-              <span class="akm-spec-label">الموقع</span>
-              <span class="akm-spec-value">{{ m_location }}</span>
+              <span class="pdp-ks-text">
+                <span class="pdp-ks-label">الموقع</span>
+                <span class="pdp-ks-val">{{ m_location }}</span>
+              </span>
             </div>
           {%- endif -%}
-
         </div>
-      </section>
-    {%- endif -%}
 
-    {%- comment %} ===== Features collection ===== {%- endcomment %}
+        {%- if m_location != blank -%}
+          <div class="pdp-location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>متاحة للمعاينة في {{ m_location }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} CTA buttons {%- endcomment -%}
+        <div class="pdp-ctas">
+          {%- if m_whatsapp != blank -%}
+            <a class="pdp-btn pdp-btn--wa"
+               href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_inquiry_enc }}"
+               target="_blank" rel="noopener nofollow" aria-label="تواصل عبر واتساب">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.889 9.884"/></svg>
+              <span>واتساب</span>
+            </a>
+          {%- endif -%}
+
+          {%- if m_phone != blank -%}
+            <a class="pdp-btn pdp-btn--call"
+               href="tel:{{ phone_clean }}" aria-label="اتصل بنا">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.8.36 1.58.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c1.23.34 2.01.58 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>اتصل الآن</span>
+            </a>
+          {%- endif -%}
+
+          {%- if m_whatsapp != blank -%}
+            <a class="pdp-btn pdp-btn--book pdp-cta-full"
+               href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_book_enc }}"
+               target="_blank" rel="noopener nofollow" aria-label="احجز معاينة عبر واتساب">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>احجز معاينة</span>
+            </a>
+          {%- endif -%}
+        </div>
+
+        <div class="pdp-trust-list" aria-label="ضمانات">
+          <div class="pdp-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            <span>فحص متاح قبل الشراء</span>
+          </div>
+          <div class="pdp-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            <span>صور أصلية بدون فلاتر</span>
+          </div>
+          <div class="pdp-trust-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            <span>تواصل مباشر مع AKM</span>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+    {%- comment -%} ── Below-fold: two-column on desktop ── {%- endcomment -%}
+
+    {%- comment -%} Collect features {%- endcomment -%}
     {%- liquid
       assign features_collected = ''
 
       if m_features_category != blank
-        assign farr_category = m_features_category | split: '،'
+        assign farr_category = m_features_category | split: '، '
         for f in farr_category
           assign fc = f | strip
           if fc != blank
@@ -1492,205 +786,134 @@
       assign features_array = features_collected | split: '|||'
     -%}
 
-    {%- comment %} ===== Two-column premium layout (desktop) / stacked (mobile) ===== {%- endcomment %}
-    <div class="akm-detail-grid">
+    <div class="pdp-content">
 
-      {%- comment %} === LEFT COLUMN: Specs, Features, Trust === {%- endcomment %}
-      <aside class="akm-detail-sidebar">
+      {%- comment -%} Main column {%- endcomment -%}
+      <div class="pdp-content-main">
 
-        {%- comment %} Technical specs compact card {%- endcomment %}
+        {%- if product.description != blank -%}
+          <div class="pdp-card">
+            <h2 class="pdp-card-title" id="akm-overview-{{ section.id }}">نظرة عامة على السيارة</h2>
+            <div class="pdp-desc rte">{{ product.description }}</div>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} Inspection notice {%- endcomment -%}
+        <div class="pdp-card">
+          <div class="pdp-notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div class="pdp-notice-text">
+              <strong>هام:</strong> ننصح بمعاينة السيارة شخصيًا والتأكد من حالتها قبل اتخاذ قرار الشراء. يمكنك حجز موعد للمعاينة عبر واتساب أو الاتصال المباشر.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Side column: tech + features {%- endcomment -%}
+      <div class="pdp-content-side">
+
         {%- if has_tech -%}
-          <section class="akm-sidebar-section" aria-labelledby="akm-tech-sidebar-{{ section.id }}">
-            <h2 class="akm-sidebar-title" id="akm-tech-sidebar-{{ section.id }}">المواصفات الفنية</h2>
-            <div class="akm-tech-compact">
+          <div class="pdp-card">
+            <h2 class="pdp-card-title" id="akm-tech-{{ section.id }}">المواصفات الفنية</h2>
+            <div class="pdp-tech-rows">
               {%- if m_engine != blank -%}
-                <div class="akm-tech-row-compact">
-                  <span class="akm-tech-label-compact">المحرك</span>
-                  <span class="akm-tech-value-compact">{{ m_engine }}</span>
+                <div class="pdp-tech-row">
+                  <span class="pdp-tech-lbl">المحرك</span>
+                  <span class="pdp-tech-val">{{ m_engine }}</span>
                 </div>
               {%- endif -%}
               {%- if m_drive != blank -%}
-                <div class="akm-tech-row-compact">
-                  <span class="akm-tech-label-compact">نظام الدفع</span>
-                  <span class="akm-tech-value-compact">{{ m_drive }}</span>
-                </div>
-              {%- endif -%}
-              {%- if m_transmission != blank -%}
-                <div class="akm-tech-row-compact">
-                  <span class="akm-tech-label-compact">ناقل الحركة</span>
-                  <span class="akm-tech-value-compact">{{ m_transmission }}</span>
+                <div class="pdp-tech-row">
+                  <span class="pdp-tech-lbl">نظام الدفع</span>
+                  <span class="pdp-tech-val">{{ m_drive }}</span>
                 </div>
               {%- endif -%}
               {%- if m_fuel != blank -%}
-                <div class="akm-tech-row-compact">
-                  <span class="akm-tech-label-compact">نوع الوقود</span>
-                  <span class="akm-tech-value-compact">{{ m_fuel }}</span>
+                <div class="pdp-tech-row">
+                  <span class="pdp-tech-lbl">نوع الوقود</span>
+                  <span class="pdp-tech-val">{{ m_fuel }}</span>
+                </div>
+              {%- endif -%}
+              {%- if m_transmission != blank -%}
+                <div class="pdp-tech-row">
+                  <span class="pdp-tech-lbl">ناقل الحركة</span>
+                  <span class="pdp-tech-val">{{ m_transmission }}</span>
                 </div>
               {%- endif -%}
               {%- if m_ext_color != blank -%}
-                <div class="akm-tech-row-compact">
-                  <span class="akm-tech-label-compact">اللون الخارجي</span>
-                  <span class="akm-tech-value-compact">{{ m_ext_color }}</span>
+                <div class="pdp-tech-row">
+                  <span class="pdp-tech-lbl">اللون الخارجي</span>
+                  <span class="pdp-tech-val">{{ m_ext_color }}</span>
                 </div>
               {%- endif -%}
               {%- if m_int_color != blank -%}
-                <div class="akm-tech-row-compact">
-                  <span class="akm-tech-label-compact">اللون الداخلي</span>
-                  <span class="akm-tech-value-compact">{{ m_int_color }}</span>
+                <div class="pdp-tech-row">
+                  <span class="pdp-tech-lbl">اللون الداخلي</span>
+                  <span class="pdp-tech-val">{{ m_int_color }}</span>
                 </div>
               {%- endif -%}
             </div>
-          </section>
+          </div>
         {%- endif -%}
 
-        {%- comment %} Features compact {%- endcomment %}
         {%- if features_array.size > 0 -%}
-          <section class="akm-sidebar-section" aria-labelledby="akm-features-sidebar-{{ section.id }}">
-            <h2 class="akm-sidebar-title" id="akm-features-sidebar-{{ section.id }}">مميزات إضافية</h2>
-            <div class="akm-features-compact">
+          <div class="pdp-card" style="margin-top: 16px;">
+            <h2 class="pdp-card-title" id="akm-features-{{ section.id }}">مميزات إضافية</h2>
+            <div class="pdp-pills">
               {%- assign seen = '|||' -%}
               {%- for f in features_array -%}
                 {%- assign f_trim = f | strip -%}
                 {%- assign key = '|||' | append: f_trim | append: '|||' -%}
                 {%- unless f_trim == blank or seen contains key -%}
-                  <span class="akm-feature-pill">{{ f_trim }}</span>
+                  <span class="pdp-pill">{{ f_trim }}</span>
                   {%- assign seen = seen | append: f_trim | append: '|||' -%}
                 {%- endunless -%}
               {%- endfor -%}
             </div>
-          </section>
-        {%- endif -%}
-
-        {%- comment %} Trust compact {%- endcomment %}
-        <section class="akm-sidebar-section" aria-labelledby="akm-trust-sidebar-{{ section.id }}">
-          <h2 class="akm-sidebar-title" id="akm-trust-sidebar-{{ section.id }}">ضمانات المعاينة</h2>
-          <div class="akm-trust-compact">
-            <div class="akm-trust-item-compact">
-              <svg class="akm-trust-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>فحص متاح قبل الشراء</span>
-            </div>
-            <div class="akm-trust-item-compact">
-              <svg class="akm-trust-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>صور أصلية بدون فلاتر</span>
-            </div>
-            <div class="akm-trust-item-compact">
-              <svg class="akm-trust-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>معاينة سهلة وسريعة</span>
-            </div>
-            <div class="akm-trust-item-compact">
-              <svg class="akm-trust-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>تواصل مباشر مع AKM</span>
-            </div>
-            <div class="akm-trust-item-compact">
-              <svg class="akm-trust-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <span>بيانات موثوقة ومنظمة</span>
-            </div>
           </div>
-        </section>
-
-      </aside>
-
-      {%- comment %} === RIGHT COLUMN: Vehicle Overview / Description === {%- endcomment %}
-      <div class="akm-detail-main">
-
-        {%- if product.description != blank -%}
-          <section class="akm-main-section" aria-labelledby="akm-overview-{{ section.id }}">
-            <h2 class="akm-main-title" id="akm-overview-{{ section.id }}">نظرة عامة على السيارة</h2>
-            <div class="akm-overview-card">
-              <div class="akm-overview-content rte">{{ product.description }}</div>
-            </div>
-          </section>
         {%- endif -%}
-
-        {%- comment %} Vehicle highlights section {%- endcomment %}
-        {%- if m_year != blank or m_mileage != blank or m_condition != blank -%}
-          <section class="akm-main-section" aria-labelledby="akm-highlights-{{ section.id }}">
-            <h2 class="akm-main-title" id="akm-highlights-{{ section.id }}">أبرز المعلومات</h2>
-            <div class="akm-highlights-grid">
-              {%- if m_year != blank -%}
-                <div class="akm-highlight-item">
-                  <span class="akm-highlight-label">سنة الصنع</span>
-                  <span class="akm-highlight-value">{{ m_year }}</span>
-                </div>
-              {%- endif -%}
-              {%- if m_mileage != blank -%}
-                <div class="akm-highlight-item">
-                  <span class="akm-highlight-label">المسافة المقطوعة</span>
-                  <span class="akm-highlight-value">{{ m_mileage }}</span>
-                </div>
-              {%- endif -%}
-              {%- if m_condition != blank -%}
-                <div class="akm-highlight-item">
-                  <span class="akm-highlight-label">الحالة</span>
-                  <span class="akm-highlight-value">{{ m_condition }}</span>
-                </div>
-              {%- endif -%}
-              {%- if m_location != blank -%}
-                <div class="akm-highlight-item">
-                  <span class="akm-highlight-label">الموقع</span>
-                  <span class="akm-highlight-value">{{ m_location }}</span>
-                </div>
-              {%- endif -%}
-            </div>
-          </section>
-        {%- endif -%}
-
-        {%- comment %} Inspection notice {%- endcomment %}
-        <section class="akm-main-section">
-          <div class="akm-inspection-notice">
-            <div class="akm-inspection-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            </div>
-            <div class="akm-inspection-text">
-              <strong>هام:</strong> ننصح بمعاينة السيارة شخصيًا والتأكد من حالتها قبل اتخاذ قرار الشراء. يمكنك حجز موعد للمعاينة عبر واتساب أو الاتصال المباشر.
-            </div>
-          </div>
-        </section>
 
       </div>
 
     </div>
 
-    {%- comment %} ===== Bottom contact CTA (in-flow) ===== {%- endcomment %}
+    {%- comment -%} ── Bottom CTA ── {%- endcomment -%}
     {%- if m_whatsapp != blank or m_phone != blank -%}
-      <section class="akm-section" aria-label="تواصل سريع">
-        <div class="akm-bottom-cta">
-          <h2 class="akm-bottom-cta-title">مهتم بهذه السيارة؟</h2>
-          <p class="akm-bottom-cta-text">تواصل مع بائع السيارة لترتيب موعد للمعاينة.</p>
-          <div class="akm-cta-group">
-            {%- if m_whatsapp != blank -%}
-              <a class="akm-btn akm-btn-whatsapp"
-                 href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_inquiry_enc }}"
-                 target="_blank" rel="noopener nofollow"
-                 aria-label="تواصل عبر واتساب">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.889 9.884"/></svg>
-                <span>واتساب</span>
-              </a>
-            {%- endif -%}
-            {%- if m_phone != blank -%}
-              <a class="akm-btn akm-btn-call" href="tel:{{ phone_clean }}" aria-label="اتصل بنا">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <span>اتصل الآن</span>
-              </a>
-            {%- endif -%}
-            {%- if m_whatsapp != blank -%}
-              <a class="akm-btn akm-btn-primary"
-                 href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_book_enc }}"
-                 target="_blank" rel="noopener nofollow"
-                 aria-label="احجز معاينة">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>احجز معاينة</span>
-              </a>
-            {%- endif -%}
-          </div>
+      <div class="pdp-bottom-cta">
+        <h2 class="pdp-bottom-cta-title">مهتم بهذه السيارة؟</h2>
+        <p class="pdp-bottom-cta-sub">تواصل معنا لترتيب موعد المعاينة.</p>
+        <div class="pdp-ctas">
+          {%- if m_whatsapp != blank -%}
+            <a class="pdp-btn pdp-btn--wa"
+               href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_inquiry_enc }}"
+               target="_blank" rel="noopener nofollow" aria-label="واتساب">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12.05 21.785a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.889 9.884"/></svg>
+              <span>واتساب</span>
+            </a>
+          {%- endif -%}
+          {%- if m_phone != blank -%}
+            <a class="pdp-btn pdp-btn--call"
+               href="tel:{{ phone_clean }}" aria-label="اتصل">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.8.36 1.58.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c1.23.34 2.01.58 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>اتصل الآن</span>
+            </a>
+          {%- endif -%}
+          {%- if m_whatsapp != blank -%}
+            <a class="pdp-btn pdp-btn--book pdp-cta-full"
+               href="https://wa.me/{{ whatsapp_clean }}?text={{ wa_book_enc }}"
+               target="_blank" rel="noopener nofollow" aria-label="احجز معاينة">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>احجز معاينة</span>
+            </a>
+          {%- endif -%}
         </div>
-      </section>
+      </div>
     {%- endif -%}
 
   </div>
 </section>
 
-{%- comment %} ===== JSON-LD: Product schema (real visible data only) ===== {%- endcomment %}
+{%- comment -%} ── JSON-LD structured data ── {%- endcomment -%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1724,32 +947,22 @@
 </script>
 
 <script>
-  (function () {
-    var sectionEl = document.querySelector('[data-section-id="{{ section.id }}"]');
-    if (!sectionEl) return;
-
-    var mainImg = sectionEl.querySelector('#akm-main-img-{{ section.id }}');
-    var thumbs  = sectionEl.querySelectorAll('.akm-thumb');
-    if (!mainImg || !thumbs.length) return;
-
-    thumbs.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var src = btn.getAttribute('data-src');
-        var alt = btn.getAttribute('data-alt');
-        if (src) mainImg.src = src;
-        if (alt) mainImg.alt = alt;
-        thumbs.forEach(function (b) { b.classList.remove('is-active'); });
-        btn.classList.add('is-active');
-      });
-
-      btn.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          btn.click();
-        }
-      });
+(function () {
+  var sec = document.querySelector('[data-section-id="{{ section.id }}"]');
+  if (!sec) return;
+  var img = sec.querySelector('#akm-img-{{ section.id }}');
+  var thumbs = sec.querySelectorAll('.pdp-thumb-btn');
+  if (!img || !thumbs.length) return;
+  thumbs.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var s = b.dataset.src, a = b.dataset.alt;
+      if (s) img.src = s;
+      if (a) img.alt = a;
+      thumbs.forEach(function (t) { t.classList.remove('is-active'); });
+      b.classList.add('is-active');
     });
-  })();
+  });
+})();
 </script>
 
 {% schema %}
@@ -1758,121 +971,31 @@
   "tag": "section",
   "class": "section-used-car",
   "settings": [
-    {
-      "type": "header",
-      "content": "Listing Link"
-    },
+    { "type": "header", "content": "Listing Link" },
     {
       "type": "url",
       "id": "listing_url",
       "label": "Used cars listing URL",
-      "info": "Link back to the used cars listing page. Defaults to /pages/سيارات-مستعملة if empty."
+      "info": "Defaults to /pages/سيارات-مستعملة"
     },
-    {
-      "type": "header",
-      "content": "Page Colors"
-    },
-    {
-      "type": "color",
-      "id": "page_bg",
-      "label": "Page background",
-      "default": "#f5f6f8"
-    },
-    {
-      "type": "color",
-      "id": "card_bg",
-      "label": "Card background",
-      "default": "#ffffff"
-    },
-    {
-      "type": "color",
-      "id": "text_primary",
-      "label": "Primary text",
-      "default": "#0f172a"
-    },
-    {
-      "type": "color",
-      "id": "text_muted",
-      "label": "Muted text",
-      "default": "#64748b"
-    },
-    {
-      "type": "color",
-      "id": "accent",
-      "label": "Accent color",
-      "default": "#d4a017"
-    },
-    {
-      "type": "color",
-      "id": "border",
-      "label": "Border color",
-      "default": "#e2e8f0"
-    },
-    {
-      "type": "header",
-      "content": "Card Backgrounds"
-    },
-    {
-      "type": "color",
-      "id": "spec_card_bg",
-      "label": "Spec card background",
-      "default": "#f8fafc"
-    },
-    {
-      "type": "color",
-      "id": "trust_card_bg",
-      "label": "Trust card background",
-      "default": "#fffbe6"
-    },
-    {
-      "type": "header",
-      "content": "Contact Details"
-    },
-    {
-      "type": "text",
-      "id": "default_whatsapp",
-      "label": "Default WhatsApp number",
-      "info": "Optional fallback if the product metafield car_details.whatsapp is empty. Use country code without spaces when possible."
-    },
-    {
-      "type": "text",
-      "id": "default_phone",
-      "label": "Default phone number",
-      "info": "Optional fallback if the product metafield car_details.phone is empty."
-    },
-    {
-      "type": "header",
-      "content": "Buttons"
-    },
-    {
-      "type": "color",
-      "id": "btn_bg",
-      "label": "Primary button background",
-      "default": "#0f172a"
-    },
-    {
-      "type": "color",
-      "id": "btn_text",
-      "label": "Primary button text",
-      "default": "#ffffff"
-    },
-    {
-      "type": "color",
-      "id": "whatsapp_bg",
-      "label": "WhatsApp button",
-      "default": "#25d366"
-    },
-    {
-      "type": "color",
-      "id": "call_bg",
-      "label": "Call button",
-      "default": "#2563eb"
-    }
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "page_bg",       "label": "Page background",      "default": "#f5f6f8" },
+    { "type": "color", "id": "card_bg",       "label": "Card background",      "default": "#ffffff" },
+    { "type": "color", "id": "text_primary",   "label": "Primary text",         "default": "#0f172a" },
+    { "type": "color", "id": "text_muted",     "label": "Muted text",           "default": "#64748b" },
+    { "type": "color", "id": "accent",         "label": "Accent color",         "default": "#d4a017" },
+    { "type": "color", "id": "border",         "label": "Border",               "default": "#e2e8f0" },
+    { "type": "color", "id": "spec_card_bg",   "label": "Spec card bg",         "default": "#f8fafc" },
+    { "type": "color", "id": "trust_card_bg",  "label": "Trust card bg",        "default": "#fffbe6" },
+    { "type": "header", "content": "Contact" },
+    { "type": "text",  "id": "default_whatsapp", "label": "Default WhatsApp",   "info": "Fallback if metafield empty" },
+    { "type": "text",  "id": "default_phone",    "label": "Default phone",      "info": "Fallback if metafield empty" },
+    { "type": "header", "content": "Buttons" },
+    { "type": "color", "id": "btn_bg",        "label": "Primary button bg",    "default": "#0f172a" },
+    { "type": "color", "id": "btn_text",      "label": "Primary button text",  "default": "#ffffff" },
+    { "type": "color", "id": "whatsapp_bg",   "label": "WhatsApp button",      "default": "#25d366" },
+    { "type": "color", "id": "call_bg",       "label": "Call button",           "default": "#2563eb" }
   ],
-  "presets": [
-    {
-      "name": "Used Car Details"
-    }
-  ]
+  "presets": [{ "name": "Used Car Details" }]
 }
 {% endschema %}
