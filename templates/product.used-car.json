@@ -1,11 +1,8 @@
 {
   "sections": {
     "main": {
-      "type": "main-product",
-      "settings": {
-        "collection": "",
-        "related_count": 4
-      }
+      "type": "used-car-product-details",
+      "settings": {}
     }
   },
   "order": ["main"]
