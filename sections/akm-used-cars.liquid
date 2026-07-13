@@ -224,6 +224,7 @@
 
             <article class="akm-uc-card"
               data-akm-uc-card
+              data-product-url="{{ product.url }}"
               data-search="{{ search_string }}"
               data-condition="{{ car_condition | downcase }}"
               data-price="{{ product.price }}"
@@ -345,8 +346,6 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </a>
               </div>
-
-              <a class="akm-uc-card__link" href="{{ product.url }}" tabindex="-1" aria-hidden="true"></a>
             </article>
           {%- endfor -%}
 
@@ -624,12 +623,6 @@
   .akm-uc .akm-uc-card.is-hidden { display: none; }
   .akm-uc .akm-uc-card.is-comparing { outline: 2px solid var(--akm-uc-focus); outline-offset: -2px; }
 
-  .akm-uc .akm-uc-card__link {
-    position: absolute; inset: 0; z-index: 1;
-    border-radius: inherit;
-  }
-  .akm-uc .akm-uc-card__link:focus-visible { outline-offset: -3px; }
-
   .akm-uc .akm-uc-card__media { position: relative; aspect-ratio: 4 / 3; background: #f1f5f9; overflow: hidden; }
   .akm-uc .akm-uc-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
   .akm-uc .akm-uc-card:hover .akm-uc-card__img { transform: scale(1.05); }
@@ -721,7 +714,7 @@
   .akm-uc .akm-uc-specs li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .akm-uc .akm-uc-specs svg { width: 15px; height: 15px; color: var(--akm-uc-ink-mute); flex-shrink: 0; }
 
-  .akm-uc .akm-uc-card__quick { position: relative; z-index: 2; display: flex; gap: 8px; }
+  .akm-uc .akm-uc-card__quick { display: flex; gap: 8px; }
   .akm-uc .akm-uc-iconlink {
     flex: 1;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -738,7 +731,6 @@
   .akm-uc .akm-uc-iconlink--call:hover { background: var(--akm-uc-call); color: #fff; }
 
   .akm-uc .akm-uc-card__hint {
-    position: relative; z-index: 2;
     display: flex; align-items: center; justify-content: center; gap: 6px;
     margin-top: 2px; padding: 4px 0; font-size: 12px; font-weight: 600; color: var(--akm-uc-ink-mute);
     text-decoration: none;
@@ -1028,6 +1020,22 @@
         e.preventDefault();
         var pressed = btn.getAttribute('aria-pressed') === 'true';
         btn.setAttribute('aria-pressed', String(!pressed));
+      });
+    });
+
+    /* Click-through on the card body: convenience navigation for mouse/touch
+       users who click somewhere other than an actual control. The real,
+       keyboard-accessible, crawlable link is the "عرض تفاصيل السيارة" <a>
+       itself (data-akm-uc-details) — this handler never touches it, never
+       calls preventDefault on it, and always resolves the URL from this
+       exact card's own data-product-url so each card can only ever open
+       its own vehicle. */
+    cards.forEach(function (card) {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('a, button, input, select, label')) return;
+        if (window.getSelection && String(window.getSelection())) return;
+        var url = card.dataset.productUrl;
+        if (url) window.location.href = url;
       });
     });
 
