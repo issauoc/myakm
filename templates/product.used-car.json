@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "settings": {
+        "collection": "",
+        "related_count": 4
+      }
+    }
+  },
+  "order": ["main"]
+}
