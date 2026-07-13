@@ -233,7 +233,7 @@
     </div>
 
     <div class="akm-pdp-main">
-      <h1 class="akm-pdp-title">{{ h1_text }}</h1>
+      <h1 class="akm-pdp-title" id="akm-pdp-h1-{{ section.id }}" tabindex="-1">{{ h1_text }}</h1>
 
       <div class="akm-pdp-quickfacts">
         <span class="akm-pdp-price">{{ car_price }} ج.م</span>
@@ -431,7 +431,22 @@
     .akm-pdp-title { font-size: clamp(20px, 5.6vw, 24px); }
     .akm-pdp-price { font-size: 24px; }
   }
+
+  .akm-pdp-title:focus { outline: none; }
 </style>
+
+<script>
+  (function () {
+    'use strict';
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    var h1 = document.getElementById('akm-pdp-h1-{{ section.id }}');
+    if (!h1) return;
+    window.scrollTo(0, 0);
+    h1.focus({ preventScroll: true });
+  })();
+</script>
 
 {% schema %}
 {

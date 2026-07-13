@@ -340,13 +340,13 @@
                   </div>
                 {%- endif -%}
 
-                <span class="akm-uc-card__hint" aria-hidden="true">
+                <a class="akm-uc-card__hint" href="{{ product.url }}" data-akm-uc-details aria-label="عرض تفاصيل السيارة - {{ product.title | escape }}">
                   عرض تفاصيل السيارة
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
               </div>
 
-              <a class="akm-uc-card__link" href="{{ product.url }}" aria-label="{{ product.title | escape }} - عرض تفاصيل السيارة، السعر {{ car_price }} جنيه"></a>
+              <a class="akm-uc-card__link" href="{{ product.url }}" tabindex="-1" aria-hidden="true"></a>
             </article>
           {%- endfor -%}
 
@@ -738,8 +738,10 @@
   .akm-uc .akm-uc-iconlink--call:hover { background: var(--akm-uc-call); color: #fff; }
 
   .akm-uc .akm-uc-card__hint {
+    position: relative; z-index: 2;
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--akm-uc-ink-mute);
+    margin-top: 2px; padding: 4px 0; font-size: 12px; font-weight: 600; color: var(--akm-uc-ink-mute);
+    text-decoration: none;
   }
   .akm-uc .akm-uc-card__hint svg { width: 14px; height: 14px; transition: transform .2s ease; }
   .akm-uc .akm-uc-card:hover .akm-uc-card__hint { color: var(--akm-uc-accent); }
