@@ -424,11 +424,11 @@
     color: var(--akm-uc-ink-mute); font-size: 13px; font-weight: 600;
   }
 
-  .akm-uc .akm-uc-card__media .akm-uc-badge { position: absolute; top: 12px; right: 12px; z-index: 2; }
+  .akm-uc .akm-uc-card__media .akm-uc-badge { position: absolute; top: 12px; right: 12px; z-index: 2; pointer-events: none; }
   .akm-uc .akm-uc-card__media .akm-uc-badge--discount { right: auto; left: 12px; }
 
   .akm-uc .akm-uc-card__cond {
-    position: absolute; bottom: 12px; right: 12px; z-index: 2;
+    position: absolute; bottom: 12px; right: 12px; z-index: 2; pointer-events: none;
     display: inline-flex; padding: 4px 10px; border-radius: var(--akm-uc-radius-pill);
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
     background: rgba(255,255,255,.95); backdrop-filter: blur(4px);
@@ -523,7 +523,7 @@
   .akm-uc .akm-uc-iconlink--call:hover { background: var(--akm-uc-call); color: #fff; }
 
   .akm-uc .akm-uc-card__hint {
-    position: relative; z-index: 5; pointer-events: auto;
+    position: relative; z-index: 20; pointer-events: auto;
     display: flex; align-items: center; justify-content: center; gap: 6px;
     margin-top: 2px; padding: 4px 0; font-size: 12px; font-weight: 600; color: var(--akm-uc-ink-mute);
     text-decoration: none;
