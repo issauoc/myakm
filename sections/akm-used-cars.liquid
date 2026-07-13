@@ -523,9 +523,11 @@
   .akm-uc .akm-uc-iconlink--call:hover { background: var(--akm-uc-call); color: #fff; }
 
   .akm-uc .akm-uc-card__hint {
+    position: relative; z-index: 5; pointer-events: auto;
     display: flex; align-items: center; justify-content: center; gap: 6px;
     margin-top: 2px; padding: 4px 0; font-size: 12px; font-weight: 600; color: var(--akm-uc-ink-mute);
     text-decoration: none;
+    cursor: pointer;
   }
   .akm-uc .akm-uc-card__hint svg { width: 14px; height: 14px; transition: transform .2s ease; }
   .akm-uc .akm-uc-card:hover .akm-uc-card__hint { color: var(--akm-uc-accent); }
