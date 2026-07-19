@@ -209,71 +209,60 @@
             <style>
               {{block_css}}
 
-              /* ── Information block: base ── */
+              .block-{{block.id}} .card_footer-body {
+                padding: 0 !important;
+              }
+
               .block-{{block.id}} .footer-info-block {
                 direction: rtl;
                 text-align: right;
               }
 
-              /* ── Logo ── */
               .block-{{block.id}} .footer-info__logo {
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 12px;
               }
 
-              /* ── Contact rows container ── */
               .block-{{block.id}} .footer-info__contacts {
                 display: flex;
                 flex-direction: column;
                 gap: 0;
               }
 
-              /* ── Each contact row ── */
               .block-{{block.id}} .footer-info__contact-row {
                 display: flex;
-                flex-direction: row;
-                align-items: flex-start;
-                gap: 10px;
-                padding: 10px 0;
-                border-bottom: 1px solid rgba(255,255,255,0.06);
+                align-items: baseline;
+                gap: 6px;
+                padding: 4px 0;
               }
 
-              .block-{{block.id}} .footer-info__contact-row:last-child {
-                border-bottom: none;
-              }
-
-              /* ── Icon (right side in RTL) ── */
               .block-{{block.id}} .footer-info__contact-icon {
                 flex-shrink: 0;
-                width: 20px;
-                padding-top: 2px;
-                display: flex;
-                align-items: flex-start;
+                width: 16px;
+                display: inline-flex;
+                align-items: center;
                 justify-content: center;
                 color: #c9a84c;
               }
 
               .block-{{block.id}} .footer-info__contact-icon svg {
-                width: 17px;
-                height: 17px;
+                width: 14px;
+                height: 14px;
               }
 
-              /* ── Text (left side in RTL, takes remaining space) ── */
               .block-{{block.id}} .footer-info__contact-text {
                 flex: 1;
                 min-width: 0;
                 font-size: 13px;
-                line-height: 1.55;
+                line-height: 1.4;
                 color: #b8bcc4;
               }
 
               .block-{{block.id}} .footer-info__contact-text strong,
               .block-{{block.id}} .footer-info__contact-text b {
-                display: block;
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: 700;
                 color: #ffffff;
-                margin-bottom: 1px;
               }
 
               .block-{{block.id}} .footer-info__contact-row a {
@@ -281,31 +270,27 @@
                 font-weight: 700;
                 font-size: 13px;
                 text-decoration: none;
-                direction: ltr;
-                unicode-bidi: bidi-override;
-                display: inline-block;
               }
 
-              /* ── Social section ── */
               .block-{{block.id}} .footer-info__social {
-                margin-top: 16px;
-                padding-top: 14px;
-                border-top: 1px solid rgba(255,255,255,0.1);
+                margin-top: 10px;
+                padding-top: 8px;
+                border-top: 1px solid rgba(255,255,255,0.08);
                 text-align: center;
               }
 
               .block-{{block.id}} .footer-info__social-title {
                 display: block;
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: 700;
                 color: #ffffff;
-                margin-bottom: 10px;
+                margin-bottom: 6px;
               }
 
               .block-{{block.id}} .footer-info__social .widget-social-icons {
                 display: flex;
                 justify-content: center;
-                gap: 16px;
+                gap: 14px;
                 flex-wrap: wrap;
               }
 
@@ -317,31 +302,6 @@
                 transform: scale(1.15);
               }
 
-              /* ── Mobile ── */
-              @media (max-width: 767px) {
-                .block-{{block.id}} .card_footer-body {
-                  padding-top: 4px;
-                }
-
-                .block-{{block.id}} .footer-info__logo {
-                  margin-bottom: 16px;
-                }
-
-                .block-{{block.id}} .footer-info__contact-row {
-                  padding: 8px 0;
-                }
-
-                .block-{{block.id}} .footer-info__contact-text {
-                  font-size: 12.5px;
-                }
-
-                .block-{{block.id}} .footer-info__contact-text strong,
-                .block-{{block.id}} .footer-info__contact-text b {
-                  font-size: 13.5px;
-                }
-              }
-
-              /* ── Desktop ── */
               @media (min-width: 768px) {
                 .block-{{block.id}} .footer-info__logo {
                   text-align: right;
