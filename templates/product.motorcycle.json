@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "moto-product",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

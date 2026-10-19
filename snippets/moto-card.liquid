@@ -1,0 +1,115 @@
+{%- comment -%}
+  Renders exactly one motorcycle card for the `moto` product passed in.
+  Called as: {% render 'moto-card', moto: product, compare_label: compare_label %}
+
+  The card answers only the three questions that decide a purchase — what is it,
+  how much, and is it right for me — and has ONE primary action: open the model.
+  Compare is an optional quiet toggle; parts, guides and accessories never appear
+  here (they surface on the product page once the customer has picked a model).
+{%- endcomment -%}
+
+{%- capture m_cc -%}{%- render 'moto-data', moto: moto, field: 'cc' -%}{%- endcapture -%}
+{%- capture m_economy -%}{%- render 'moto-data', moto: moto, field: 'economy' -%}{%- endcapture -%}
+{%- capture m_speed -%}{%- render 'moto-data', moto: moto, field: 'speed' -%}{%- endcapture -%}
+{%- capture m_tank -%}{%- render 'moto-data', moto: moto, field: 'tank' -%}{%- endcapture -%}
+{%- capture m_weight -%}{%- render 'moto-data', moto: moto, field: 'weight' -%}{%- endcapture -%}
+{%- capture m_warranty -%}{%- render 'moto-data', moto: moto, field: 'warranty' -%}{%- endcapture -%}
+{%- capture m_use -%}{%- render 'moto-data', moto: moto, field: 'use' -%}{%- endcapture -%}
+{%- capture m_use_label -%}{%- render 'moto-data', moto: moto, field: 'use_label' -%}{%- endcapture -%}
+
+{%- liquid
+  assign m_price = moto.price | money_without_trailing_zeros
+  assign m_stock = 0
+  assign m_tracked = false
+  for v in moto.variants
+    if v.inventory_management == 'shopify'
+      assign m_tracked = true
+      if v.inventory_quantity > 0
+        assign m_stock = m_stock | plus: v.inventory_quantity
+      endif
+    endif
+  endfor
+  assign m_created = moto.created_at | date: '%s'
+  assign m_alt = moto.featured_image.alt | default: moto.title
+-%}
+
+<article class="mk-moto-card{% unless moto.available %} is-soldout{% endunless %}"
+  data-mk-moto-card
+  data-id="{{ moto.id }}"
+  data-url="{{ moto.url }}"
+  data-price="{{ moto.price | divided_by: 100 }}"
+  data-use="{{ m_use }}"
+  data-available="{{ moto.available }}"
+  data-created="{{ m_created }}">
+
+  <a class="mk-moto-card__media" href="{{ moto.url }}" tabindex="-1" aria-hidden="true">
+    {%- if moto.featured_image -%}
+      {{ moto.featured_image | image_url: width: 720 | image_tag:
+        class: 'mk-moto-card__img',
+        loading: 'lazy',
+        widths: '360, 540, 720',
+        sizes: '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw',
+        alt: m_alt
+      }}
+    {%- else -%}
+      <span class="mk-moto-card__img mk-moto-card__img--empty">{{ 'product-1' | placeholder_svg_tag }}</span>
+    {%- endif -%}
+
+    <span class="mk-moto-card__match" data-mk-moto-match hidden>الأنسب لك</span>
+
+    {%- if moto.available == false -%}
+      <span class="mk-moto-card__flag mk-moto-card__flag--out">نفد من المخزون</span>
+    {%- elsif m_tracked and m_stock > 0 and m_stock <= 3 -%}
+      <span class="mk-moto-card__flag mk-moto-card__flag--low">آخر {{ m_stock }} في المخزون</span>
+    {%- endif -%}
+  </a>
+
+  <div class="mk-moto-card__body">
+    {%- if m_use_label != blank -%}
+      <p class="mk-moto-card__use">{{ m_use_label }}</p>
+    {%- endif -%}
+
+    <h3 class="mk-moto-card__title">
+      <a href="{{ moto.url }}" data-mk-moto-link>{{ moto.title }}</a>
+    </h3>
+
+    {%- if m_cc != blank or m_economy != blank or m_speed != blank -%}
+      <ul class="mk-moto-card__specs" role="list">
+        {%- if m_cc != blank -%}<li><strong>{{ m_cc }}</strong> سي سي</li>{%- endif -%}
+        {%- if m_economy != blank -%}<li><strong>{{ m_economy }}</strong> كم/لتر</li>{%- endif -%}
+        {%- if m_speed != blank -%}<li><strong>{{ m_speed }}</strong> كم/س</li>{%- endif -%}
+      </ul>
+    {%- endif -%}
+
+    <div class="mk-moto-card__foot">
+      <div class="mk-moto-card__price">
+        {%- if moto.compare_at_price > moto.price -%}
+          <s>{{ moto.compare_at_price | money_without_trailing_zeros }}</s>
+        {%- endif -%}
+        <span>{% if moto.price_varies %}من {% endif %}{{ m_price }}</span>
+      </div>
+
+      <button type="button"
+        class="mk-moto-compare"
+        data-mk-moto-compare
+        aria-pressed="false"
+        data-id="{{ moto.id }}"
+        data-title="{{ moto.title | escape }}"
+        data-image="{% if moto.featured_image %}{{ moto.featured_image | image_url: width: 240 }}{% endif %}"
+        data-url="{{ moto.url }}"
+        data-v-price="{{ m_price | escape }}"
+        data-v-cc="{{ m_cc | escape }}"
+        data-v-economy="{{ m_economy | escape }}"
+        data-v-speed="{{ m_speed | escape }}"
+        data-v-tank="{{ m_tank | escape }}"
+        data-v-weight="{{ m_weight | escape }}"
+        data-v-warranty="{{ m_warranty | escape }}"
+        data-v-use="{{ m_use_label | escape }}">
+        <span class="mk-moto-compare__box" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        {{ compare_label }}
+      </button>
+    </div>
+  </div>
+</article>

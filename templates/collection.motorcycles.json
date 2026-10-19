@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "moto-collection",
+      "settings": {
+        "collection": "",
+        "show_sold_out": false
+      }
+    }
+  },
+  "order": ["main"]
+}

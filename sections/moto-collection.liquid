@@ -1,0 +1,522 @@
+{%- comment -%}
+  MYAKM Ride — Motorcycles collection
+  One decision path: pick a model from real stock -> open it -> buy.
+
+  The page shows only what the decision needs: a one-line header, two optional
+  questions (what for? / what budget?) that double as filters, and the grid.
+  Answering them highlights the best match; ignoring them costs nothing.
+  Compare is opt-in from a card and only then shows a bar.
+  Parts, bearings and guides deliberately do NOT appear on this page.
+
+  Works on a collection template (uses the current `collection`) or anywhere
+  else with a collection picked in the section settings. Filter state lives in
+  the URL (?use=city&budget=2) so it survives back/forward and can be shared.
+{%- endcomment -%}
+
+{%- liquid
+  assign uid = section.id
+  assign moto_collection = collections[section.settings.collection]
+  if moto_collection == blank
+    assign moto_collection = collection
+  endif
+
+  assign heading = section.settings.heading | default: 'موتوسيكلات MYAKM'
+  assign subtitle = section.settings.subtitle
+  assign limit = section.settings.products_limit | default: 24
+  assign compare_label = section.settings.compare_label | default: 'قارن'
+
+  assign b1 = section.settings.budget_1 | default: 40000
+  assign b2 = section.settings.budget_2 | default: 70000
+  assign b3 = section.settings.budget_3 | default: 100000
+  assign b1_k = b1 | divided_by: 1000
+  assign b2_k = b2 | divided_by: 1000
+  assign b3_k = b3 | divided_by: 1000
+
+  assign shown = 0
+  for p in moto_collection.products limit: limit
+    if p.available or section.settings.show_sold_out
+      assign shown = shown | plus: 1
+    endif
+  endfor
+-%}
+
+<div class="mk-moto" id="mk-moto-{{ uid }}" data-mk-moto
+  data-budgets="{{ b1 }},{{ b2 }},{{ b3 }}"
+  data-max-compare="{{ section.settings.max_compare | default: 3 }}"
+  style="--mk-accent: {{ section.settings.accent | default: '#ff5a1f' }};"
+  dir="rtl" lang="ar">
+
+  <header class="mk-moto-head">
+    <div class="mk-moto-wrap">
+      <h1 class="mk-moto-head__title">{{ heading }}</h1>
+      {%- if subtitle != blank -%}<p class="mk-moto-head__sub">{{ subtitle }}</p>{%- endif -%}
+    </div>
+  </header>
+
+  {%- if moto_collection != blank and shown > 0 -%}
+    <div class="mk-moto-guide" data-mk-moto-guide>
+      <div class="mk-moto-wrap mk-moto-guide__inner">
+        <div class="mk-moto-q" role="group" aria-labelledby="mk-moto-q-use-{{ uid }}">
+          <span class="mk-moto-q__label" id="mk-moto-q-use-{{ uid }}">هتستخدمه في إيه؟</span>
+          <div class="mk-moto-q__opts">
+            <button type="button" class="mk-moto-chip" data-mk-moto-use="city" aria-pressed="false">تنقّل يومي</button>
+            <button type="button" class="mk-moto-chip" data-mk-moto-use="work" aria-pressed="false">شغل وتوصيل</button>
+            <button type="button" class="mk-moto-chip" data-mk-moto-use="travel" aria-pressed="false">سفر ومسافات</button>
+            <button type="button" class="mk-moto-chip" data-mk-moto-use="offroad" aria-pressed="false">طرق وعرة</button>
+          </div>
+        </div>
+
+        <div class="mk-moto-q" role="group" aria-labelledby="mk-moto-q-budget-{{ uid }}">
+          <span class="mk-moto-q__label" id="mk-moto-q-budget-{{ uid }}">ميزانيتك؟</span>
+          <div class="mk-moto-q__opts">
+            <button type="button" class="mk-moto-chip" data-mk-moto-budget="1" aria-pressed="false">حتى {{ b1_k }} ألف</button>
+            <button type="button" class="mk-moto-chip" data-mk-moto-budget="2" aria-pressed="false">{{ b1_k }}–{{ b2_k }} ألف</button>
+            <button type="button" class="mk-moto-chip" data-mk-moto-budget="3" aria-pressed="false">{{ b2_k }}–{{ b3_k }} ألف</button>
+            <button type="button" class="mk-moto-chip" data-mk-moto-budget="4" aria-pressed="false">أكثر من {{ b3_k }} ألف</button>
+          </div>
+        </div>
+
+        <div class="mk-moto-guide__end">
+          <span class="mk-moto-count" data-mk-moto-count aria-live="polite">{{ shown }} موديل متاح</span>
+          <button type="button" class="mk-moto-reset" data-mk-moto-reset hidden>مسح</button>
+          <label class="mk-moto-sort">
+            <span class="mk-moto-sr">ترتيب</span>
+            <select data-mk-moto-sort>
+              <option value="default">الأحدث</option>
+              <option value="price-asc">السعر: الأقل</option>
+              <option value="price-desc">السعر: الأعلى</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <section class="mk-moto-list">
+    <div class="mk-moto-wrap">
+      {%- if moto_collection == blank -%}
+        <p class="mk-moto-empty">اختر مجموعة الموتوسيكلات من إعدادات القسم.</p>
+      {%- elsif shown == 0 -%}
+        <p class="mk-moto-empty">لا توجد موديلات متاحة في المخزون حاليًا.</p>
+      {%- else -%}
+        <div class="mk-moto-grid" data-mk-moto-grid>
+          {%- for p in moto_collection.products limit: limit -%}
+            {%- if p.available or section.settings.show_sold_out -%}
+              {%- render 'moto-card', moto: p, compare_label: compare_label -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+
+        <div class="mk-moto-empty" data-mk-moto-none hidden>
+          <p>مفيش موديل مطابق للاختيارين دول بالظبط.</p>
+          <button type="button" class="mk-moto-btn mk-moto-btn--ghost" data-mk-moto-nearest>اعرض أقرب اختيارات لميزانيتك</button>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+
+  <div class="mk-moto-cbar" data-mk-moto-cbar hidden>
+    <div class="mk-moto-wrap mk-moto-cbar__inner">
+      <div class="mk-moto-cbar__list" data-mk-moto-cbar-list role="list" aria-label="الموديلات المختارة للمقارنة"></div>
+      <button type="button" class="mk-moto-btn mk-moto-btn--ghost-dark" data-mk-moto-cbar-clear>مسح</button>
+      <button type="button" class="mk-moto-btn" data-mk-moto-cbar-open disabled>قارن <span data-mk-moto-cbar-count></span></button>
+    </div>
+  </div>
+
+  <dialog class="mk-moto-cmp" data-mk-moto-cmp aria-labelledby="mk-moto-cmp-title-{{ uid }}">
+    <div class="mk-moto-cmp__head">
+      <h2 id="mk-moto-cmp-title-{{ uid }}">مقارنة الموديلات</h2>
+      <button type="button" class="mk-moto-x" data-mk-moto-cmp-close aria-label="إغلاق">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mk-moto-cmp__body" data-mk-moto-cmp-body></div>
+  </dialog>
+</div>
+
+<style>
+  .mk-moto {
+    --mk-ink: #0b0f17;
+    --mk-ink-soft: #4b5563;
+    --mk-mute: #9ca3af;
+    --mk-line: #e5e7eb;
+    --mk-soft: #f3f4f6;
+    --mk-bg: #fafafa;
+    --mk-ok: #059669;
+    --mk-warn: #b45309;
+    --mk-radius: 16px;
+    color: var(--mk-ink);
+    background: var(--mk-bg);
+    line-height: 1.5;
+  }
+  .mk-moto *, .mk-moto *::before, .mk-moto *::after { box-sizing: border-box; }
+  .mk-moto button, .mk-moto select { font: inherit; color: inherit; }
+  .mk-moto :focus-visible { outline: 3px solid var(--mk-accent); outline-offset: 2px; border-radius: 8px; }
+  .mk-moto .mk-moto-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mk-moto .mk-moto-wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+
+  /* Header: one line of context, no hero banner — the bikes are the hero. */
+  .mk-moto .mk-moto-head { padding: 28px 0 8px; }
+  .mk-moto .mk-moto-head__title { margin: 0; font-size: clamp(24px, 4vw, 36px); font-weight: 800; letter-spacing: -.02em; }
+  .mk-moto .mk-moto-head__sub { margin: 6px 0 0; color: var(--mk-ink-soft); font-size: 15px; max-width: 640px; }
+
+  /* Guide: two optional questions that are also the filters. */
+  .mk-moto .mk-moto-guide {
+    position: sticky; top: var(--sticky-area-height, 0px); z-index: 5;
+    background: rgba(250,250,250,.94);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--mk-line);
+  }
+  .mk-moto .mk-moto-guide__inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding-top: 12px; padding-bottom: 12px; }
+  .mk-moto .mk-moto-q { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .mk-moto .mk-moto-q__label { font-size: 13px; font-weight: 700; color: var(--mk-ink-soft); white-space: nowrap; }
+  .mk-moto .mk-moto-q__opts { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .mk-moto .mk-moto-q__opts::-webkit-scrollbar { display: none; }
+  .mk-moto .mk-moto-chip {
+    flex: 0 0 auto; min-height: 40px; padding: 8px 14px;
+    border: 1px solid var(--mk-line); border-radius: 999px; background: #fff;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+  }
+  .mk-moto .mk-moto-chip:hover { border-color: var(--mk-mute); }
+  .mk-moto .mk-moto-chip[aria-pressed="true"] { background: var(--mk-ink); border-color: var(--mk-ink); color: #fff; }
+  .mk-moto .mk-moto-guide__end { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; }
+  .mk-moto .mk-moto-count { font-size: 13px; color: var(--mk-ink-soft); font-weight: 600; white-space: nowrap; }
+  .mk-moto .mk-moto-reset { border: 0; background: none; padding: 6px; font-size: 13px; font-weight: 700; color: var(--mk-accent); cursor: pointer; text-decoration: underline; }
+  .mk-moto .mk-moto-sort select {
+    appearance: none; min-height: 40px; padding: 8px 32px 8px 14px; border: 1px solid var(--mk-line); border-radius: 999px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat left 12px center;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  /* Grid + card */
+  .mk-moto .mk-moto-list { padding: 20px 0 96px; }
+  .mk-moto .mk-moto-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .mk-moto .mk-moto-card {
+    position: relative; display: flex; flex-direction: column;
+    background: #fff; border: 1px solid var(--mk-line); border-radius: var(--mk-radius); overflow: hidden;
+    transition: box-shadow .2s, transform .2s, border-color .2s;
+  }
+  .mk-moto .mk-moto-card:hover { box-shadow: 0 18px 36px -14px rgba(11,15,23,.22); transform: translateY(-2px); }
+  .mk-moto .mk-moto-card[hidden] { display: none; }
+  .mk-moto .mk-moto-card.is-match { border-color: var(--mk-accent); box-shadow: 0 0 0 1px var(--mk-accent); }
+  .mk-moto .mk-moto-card.is-soldout .mk-moto-card__img { filter: grayscale(.8); opacity: .7; }
+  .mk-moto .mk-moto-card__media { position: relative; display: block; aspect-ratio: 4 / 3; background: var(--mk-soft); overflow: hidden; }
+  .mk-moto .mk-moto-card__img { width: 100%; height: 100%; object-fit: contain; padding: 8px; transition: transform .35s ease; }
+  .mk-moto .mk-moto-card:hover .mk-moto-card__img { transform: scale(1.04); }
+  .mk-moto .mk-moto-card__img--empty svg { width: 100%; height: 100%; fill: var(--mk-mute); }
+  .mk-moto .mk-moto-card__match, .mk-moto .mk-moto-card__flag {
+    position: absolute; top: 12px; padding: 5px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; line-height: 1;
+  }
+  .mk-moto .mk-moto-card__match { right: 12px; background: var(--mk-accent); color: #fff; }
+  .mk-moto .mk-moto-card__match[hidden] { display: none; }
+  .mk-moto .mk-moto-card__flag { left: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .mk-moto .mk-moto-card__flag--low { color: var(--mk-warn); }
+  .mk-moto .mk-moto-card__flag--out { color: var(--mk-ink-soft); }
+  .mk-moto .mk-moto-card__body { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 16px; flex: 1; }
+  .mk-moto .mk-moto-card__use { margin: 0; font-size: 12px; font-weight: 700; color: var(--mk-accent); }
+  .mk-moto .mk-moto-card__title { margin: 0; font-size: 16px; font-weight: 800; line-height: 1.3; }
+  .mk-moto .mk-moto-card__title a { color: inherit; text-decoration: none; }
+  /* Whole card is clickable via the title link's overlay; compare sits above it. */
+  .mk-moto .mk-moto-card__title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .mk-moto .mk-moto-card__specs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .mk-moto .mk-moto-card__specs li { padding: 4px 9px; border-radius: 8px; background: var(--mk-soft); font-size: 12px; color: var(--mk-ink-soft); }
+  .mk-moto .mk-moto-card__specs strong { color: var(--mk-ink); font-variant-numeric: tabular-nums; }
+  .mk-moto .mk-moto-card__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 6px; }
+  .mk-moto .mk-moto-card__price { display: flex; flex-direction: column; }
+  .mk-moto .mk-moto-card__price s { font-size: 12px; color: var(--mk-mute); }
+  .mk-moto .mk-moto-card__price span { font-size: 20px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+
+  .mk-moto .mk-moto-compare {
+    position: relative; z-index: 2;
+    display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 10px;
+    border: 1px solid var(--mk-line); border-radius: 999px; background: #fff;
+    font-size: 12px; font-weight: 600; color: var(--mk-ink-soft); cursor: pointer;
+  }
+  .mk-moto .mk-moto-compare__box { width: 15px; height: 15px; border: 1.5px solid currentColor; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; }
+  .mk-moto .mk-moto-compare__box svg { width: 10px; height: 10px; opacity: 0; }
+  .mk-moto .mk-moto-compare[aria-pressed="true"] { border-color: var(--mk-ink); color: var(--mk-ink); }
+  .mk-moto .mk-moto-compare[aria-pressed="true"] .mk-moto-compare__box { background: var(--mk-ink); border-color: var(--mk-ink); color: #fff; }
+  .mk-moto .mk-moto-compare[aria-pressed="true"] svg { opacity: 1; }
+
+  .mk-moto .mk-moto-empty { text-align: center; padding: 48px 16px; color: var(--mk-ink-soft); }
+  .mk-moto .mk-moto-empty[hidden] { display: none; }
+  .mk-moto .mk-moto-empty p { margin: 0 0 14px; }
+
+  .mk-moto .mk-moto-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px; padding: 10px 20px; border: 0; border-radius: 999px;
+    background: var(--mk-accent); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .mk-moto .mk-moto-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .mk-moto .mk-moto-btn--ghost { background: #fff; color: var(--mk-ink); border: 1px solid var(--mk-line); }
+  .mk-moto .mk-moto-btn--ghost-dark { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.25); }
+
+  /* Compare bar + dialog */
+  .mk-moto .mk-moto-cbar {
+    position: sticky; bottom: 0; z-index: 6; background: rgba(11,15,23,.96); color: #fff;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mk-moto .mk-moto-cbar[hidden] { display: none; }
+  .mk-moto .mk-moto-cbar__inner { display: flex; align-items: center; gap: 10px; padding-top: 10px; padding-bottom: 10px; }
+  .mk-moto .mk-moto-cbar__list { display: flex; gap: 8px; flex: 1; min-width: 0; overflow-x: auto; }
+  .mk-moto .mk-moto-cbar__item { display: flex; align-items: center; gap: 8px; padding: 4px 6px 4px 4px; border-radius: 10px; background: rgba(255,255,255,.08); flex: 0 0 auto; }
+  .mk-moto .mk-moto-cbar__item img { width: 34px; height: 34px; border-radius: 6px; object-fit: contain; background: #fff; }
+  .mk-moto .mk-moto-cbar__item span { font-size: 12.5px; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mk-moto .mk-moto-cbar__item button { width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(255,255,255,.16); color: #fff; cursor: pointer; line-height: 1; }
+
+  .mk-moto .mk-moto-cmp { width: min(920px, calc(100% - 24px)); max-height: calc(100vh - 48px); padding: 0; border: 0; border-radius: var(--mk-radius); box-shadow: 0 30px 60px -20px rgba(0,0,0,.4); }
+  .mk-moto .mk-moto-cmp::backdrop { background: rgba(11,15,23,.55); }
+  .mk-moto .mk-moto-cmp__head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fff; border-bottom: 1px solid var(--mk-line); }
+  .mk-moto .mk-moto-cmp__head h2 { margin: 0; font-size: 18px; font-weight: 800; }
+  .mk-moto .mk-moto-x { width: 40px; height: 40px; border: 1px solid var(--mk-line); border-radius: 50%; background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .mk-moto .mk-moto-x svg { width: 18px; height: 18px; }
+  .mk-moto .mk-moto-cmp__body { padding: 12px 18px 20px; overflow-x: auto; }
+  .mk-moto .mk-moto-cmp table { width: 100%; min-width: 460px; border-collapse: collapse; }
+  .mk-moto .mk-moto-cmp th, .mk-moto .mk-moto-cmp td { padding: 10px; text-align: center; border-bottom: 1px solid var(--mk-soft); font-size: 14px; }
+  .mk-moto .mk-moto-cmp th { text-align: right; color: var(--mk-mute); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+  .mk-moto .mk-moto-cmp img { width: 120px; aspect-ratio: 4 / 3; object-fit: contain; margin: 0 auto 6px; display: block; }
+  .mk-moto .mk-moto-cmp .is-best { color: var(--mk-ok); font-weight: 800; }
+  .mk-moto .mk-moto-cmp a.mk-moto-btn { min-height: 38px; padding: 8px 14px; font-size: 13px; text-decoration: none; }
+
+  @media (min-width: 640px) { .mk-moto .mk-moto-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+  @media (min-width: 768px) { .mk-moto .mk-moto-wrap { padding: 0 32px; } .mk-moto .mk-moto-head { padding-top: 40px; } }
+  @media (min-width: 1024px) { .mk-moto .mk-moto-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1280px) { .mk-moto .mk-moto-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 767px) {
+    .mk-moto .mk-moto-guide__inner { gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+    .mk-moto .mk-moto-q { width: 100%; }
+    .mk-moto .mk-moto-q__label { min-width: 92px; }
+    .mk-moto .mk-moto-q__opts { margin-inline-end: -16px; padding-inline-end: 16px; }
+    .mk-moto .mk-moto-guide__end { width: 100%; margin: 0; }
+    .mk-moto .mk-moto-sort { margin-inline-start: auto; }
+    .mk-moto .mk-moto-sort select { font-size: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .mk-moto * { transition: none !important; } }
+</style>
+
+<script>
+  (function () {
+    'use strict';
+    var root = document.getElementById('mk-moto-{{ uid }}');
+    if (!root || root.dataset.mkInit === '1') return;
+    root.dataset.mkInit = '1';
+
+    var grid = root.querySelector('[data-mk-moto-grid]');
+    if (!grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('[data-mk-moto-card]'));
+    var useChips = Array.prototype.slice.call(root.querySelectorAll('[data-mk-moto-use]'));
+    var budgetChips = Array.prototype.slice.call(root.querySelectorAll('[data-mk-moto-budget]'));
+    var countEl = root.querySelector('[data-mk-moto-count]');
+    var resetEl = root.querySelector('[data-mk-moto-reset]');
+    var sortEl = root.querySelector('[data-mk-moto-sort]');
+    var noneEl = root.querySelector('[data-mk-moto-none]');
+    var nearestEl = root.querySelector('[data-mk-moto-nearest]');
+    var budgets = root.dataset.budgets.split(',').map(Number);
+    var params = new URLSearchParams(location.search);
+    var state = { use: params.get('use') || '', budget: params.get('budget') || '', sort: 'default', nearest: false };
+
+    function inBudget(price, b) {
+      if (!b) return true;
+      var i = +b;
+      var lo = i === 1 ? -Infinity : budgets[i - 2];
+      var hi = i === 4 ? Infinity : budgets[i - 1];
+      return price > lo && price <= hi;
+    }
+    function maxBudget(b) { return +b === 4 ? Infinity : budgets[+b - 1]; }
+    function usesOf(card) { return (card.dataset.use || '').split(','); }
+
+    function syncChips(chips, key, value) {
+      chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.dataset[key] === value)); });
+    }
+
+    function syncUrl() {
+      var p = new URLSearchParams(location.search);
+      state.use ? p.set('use', state.use) : p.delete('use');
+      state.budget ? p.set('budget', state.budget) : p.delete('budget');
+      var q = p.toString();
+      history.replaceState(history.state, '', location.pathname + (q ? '?' + q : '') + location.hash);
+    }
+
+    function apply() {
+      var visible = [];
+      cards.forEach(function (card) {
+        var price = +card.dataset.price || 0;
+        var okUse = !state.use || usesOf(card).indexOf(state.use) !== -1;
+        // "Nearest" relaxes the budget to anything up to ~20% above its ceiling.
+        var okBudget = state.nearest
+          ? price <= maxBudget(state.budget) * 1.2
+          : inBudget(price, state.budget);
+        var show = okUse && okBudget;
+        card.hidden = !show;
+        card.classList.remove('is-match');
+        var m = card.querySelector('[data-mk-moto-match]');
+        if (m) m.hidden = true;
+        if (show) visible.push(card);
+      });
+
+      sort(visible);
+
+      // When the customer answered both questions, flag the single best fit:
+      // available, matching use, and the most bike for the money (highest price
+      // inside the budget, i.e. the top of what they said they can spend).
+      if (state.use && state.budget && visible.length) {
+        var best = visible.filter(function (c) { return c.dataset.available === 'true'; })
+          .sort(function (a, b) { return (+b.dataset.price) - (+a.dataset.price); })[0];
+        if (best && inBudget(+best.dataset.price, state.budget)) {
+          best.classList.add('is-match');
+          best.querySelector('[data-mk-moto-match]').hidden = false;
+          best.style.order = -1;
+        }
+      }
+
+      if (noneEl) {
+        noneEl.hidden = visible.length > 0;
+        if (nearestEl) nearestEl.hidden = !state.budget || state.nearest;
+      }
+      if (countEl) countEl.textContent = visible.length + (visible.length === 1 ? ' موديل' : ' موديل متاح');
+      if (resetEl) resetEl.hidden = !state.use && !state.budget;
+      syncChips(useChips, 'mkMotoUse', state.use);
+      syncChips(budgetChips, 'mkMotoBudget', state.budget);
+    }
+
+    function sort(list) {
+      var s = state.sort;
+      list.slice().sort(function (a, b) {
+        if (s === 'price-asc') return a.dataset.price - b.dataset.price;
+        if (s === 'price-desc') return b.dataset.price - a.dataset.price;
+        return b.dataset.created - a.dataset.created;
+      }).forEach(function (c, i) { c.style.order = i; });
+    }
+
+    function toggle(key, value) {
+      state[key] = state[key] === value ? '' : value;
+      state.nearest = false;
+      syncUrl();
+      apply();
+    }
+    useChips.forEach(function (c) { c.addEventListener('click', function () { toggle('use', c.dataset.mkMotoUse); }); });
+    budgetChips.forEach(function (c) { c.addEventListener('click', function () { toggle('budget', c.dataset.mkMotoBudget); }); });
+    if (sortEl) sortEl.addEventListener('change', function () { state.sort = sortEl.value; apply(); });
+    if (resetEl) resetEl.addEventListener('click', function () { state.use = ''; state.budget = ''; state.nearest = false; syncUrl(); apply(); });
+    if (nearestEl) nearestEl.addEventListener('click', function () { state.nearest = true; apply(); });
+
+    apply();
+
+    /* ---------- Optional compare ---------- */
+    var max = +root.dataset.maxCompare || 3;
+    var picked = [];
+    var toggles = Array.prototype.slice.call(root.querySelectorAll('[data-mk-moto-compare]'));
+    var bar = root.querySelector('[data-mk-moto-cbar]');
+    var barList = root.querySelector('[data-mk-moto-cbar-list]');
+    var barCount = root.querySelector('[data-mk-moto-cbar-count]');
+    var barOpen = root.querySelector('[data-mk-moto-cbar-open]');
+    var barClear = root.querySelector('[data-mk-moto-cbar-clear]');
+    var dlg = root.querySelector('[data-mk-moto-cmp]');
+    var dlgBody = root.querySelector('[data-mk-moto-cmp-body]');
+
+    function esc(s) {
+      return String(s || '').replace(/[&<>"']/g, function (ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+      });
+    }
+
+    function render() {
+      toggles.forEach(function (t) { t.setAttribute('aria-pressed', String(picked.indexOf(t) !== -1)); });
+      barList.innerHTML = picked.map(function (t, i) {
+        return '<div class="mk-moto-cbar__item" role="listitem">' +
+          (t.dataset.image ? '<img src="' + esc(t.dataset.image) + '" alt="">' : '') +
+          '<span>' + esc(t.dataset.title) + '</span>' +
+          '<button type="button" data-i="' + i + '" aria-label="إزالة ' + esc(t.dataset.title) + '">×</button></div>';
+      }).join('');
+      barCount.textContent = '(' + picked.length + ')';
+      barOpen.disabled = picked.length < 2;
+      bar.hidden = picked.length === 0;
+      if (dlg.open) picked.length < 2 ? dlg.close() : table();
+    }
+
+    function table() {
+      var rows = [
+        ['', function (t) { return (t.dataset.image ? '<img src="' + esc(t.dataset.image) + '" alt="">' : '') + '<strong>' + esc(t.dataset.title) + '</strong>'; }],
+        ['السعر', 'price'], ['المحرك (سي سي)', 'cc', 'max'], ['استهلاك البنزين (كم/لتر)', 'economy', 'max'],
+        ['السرعة القصوى (كم/س)', 'speed', 'max'], ['خزان الوقود (لتر)', 'tank', 'max'], ['الوزن (كجم)', 'weight', 'min'],
+        ['الضمان', 'warranty'], ['مناسب لـ', 'use'],
+        ['', function (t) { return '<a class="mk-moto-btn" href="' + esc(t.dataset.url) + '">اختار الموديل ده</a>'; }]
+      ];
+      var html = '<table><tbody>';
+      rows.forEach(function (r) {
+        var vals = picked.map(function (t) { return typeof r[1] === 'function' ? null : t.dataset['v' + r[1][0].toUpperCase() + r[1].slice(1)]; });
+        if (vals[0] !== null && vals.every(function (v) { return !v; })) return; // hide rows nobody has data for
+        var nums = vals.map(function (v) { return parseFloat(v); });
+        var best = r[2] === 'max' ? Math.max.apply(null, nums.filter(isFinite)) : r[2] === 'min' ? Math.min.apply(null, nums.filter(isFinite)) : NaN;
+        html += '<tr><th scope="row">' + r[0] + '</th>';
+        picked.forEach(function (t, i) {
+          var cell = typeof r[1] === 'function' ? r[1](t) : esc(vals[i] || '—');
+          var cls = r[2] && nums[i] === best && picked.length > 1 ? ' class="is-best"' : '';
+          html += '<td' + cls + '>' + cell + '</td>';
+        });
+        html += '</tr>';
+      });
+      dlgBody.innerHTML = html + '</tbody></table>';
+    }
+
+    toggles.forEach(function (t) {
+      t.addEventListener('click', function () {
+        var i = picked.indexOf(t);
+        if (i !== -1) picked.splice(i, 1);
+        else if (picked.length < max) picked.push(t);
+        else { countEl.textContent = 'تقدر تقارن ' + max + ' موديلات بحد أقصى'; setTimeout(apply, 2200); return; }
+        render();
+      });
+    });
+    barList.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-i]');
+      if (b) { picked.splice(+b.dataset.i, 1); render(); }
+    });
+    barClear.addEventListener('click', function () { picked = []; render(); });
+    barOpen.addEventListener('click', function () { table(); dlg.showModal(); });
+    root.querySelector('[data-mk-moto-cmp-close]').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "MYAKM Motorcycles",
+  "tag": "section",
+  "class": "mk-moto-section",
+  "settings": [
+    { "type": "header", "content": "المخزون" },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "مجموعة الموتوسيكلات",
+      "info": "اتركها فارغة في قالب المجموعة لاستخدام المجموعة الحالية."
+    },
+    { "type": "range", "id": "products_limit", "label": "أقصى عدد موديلات", "min": 6, "max": 48, "step": 6, "default": 24 },
+    {
+      "type": "checkbox",
+      "id": "show_sold_out",
+      "label": "عرض الموديلات غير المتاحة",
+      "info": "مغلق افتراضيًا: العميل يرى فقط ما يمكنه شراؤه فعلًا.",
+      "default": false
+    },
+    { "type": "header", "content": "المحتوى" },
+    { "type": "text", "id": "heading", "label": "العنوان", "default": "موتوسيكلات MYAKM" },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "سطر تعريفي",
+      "default": "موديلات متاحة من مخزوننا الآن. قولنا هتستخدمه في إيه وميزانيتك، وإحنا نرشّحلك الأنسب."
+    },
+    { "type": "header", "content": "شرائح الميزانية (جنيه)" },
+    { "type": "number", "id": "budget_1", "label": "الحد الأول", "default": 40000 },
+    { "type": "number", "id": "budget_2", "label": "الحد الثاني", "default": 70000 },
+    { "type": "number", "id": "budget_3", "label": "الحد الثالث", "default": 100000 },
+    { "type": "header", "content": "المقارنة والمظهر" },
+    { "type": "text", "id": "compare_label", "label": "تسمية زر المقارنة", "default": "قارن" },
+    { "type": "range", "id": "max_compare", "label": "أقصى عدد للمقارنة", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "color", "id": "accent", "label": "لون التمييز", "default": "#ff5a1f" }
+  ],
+  "presets": [{ "name": "MYAKM Motorcycles", "category": "MYAKM" }]
+}
+{% endschema %}

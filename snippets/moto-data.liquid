@@ -1,0 +1,79 @@
+{%- comment -%}
+  MYAKM Ride — single source of truth for reading one motorcycle's data.
+  Called as: {% render 'moto-data', moto: product, field: 'cc' %}
+  Outputs the plain value of ONE field (no markup), so sections and cards
+  read every attribute the same way and fall back identically.
+
+  Data source order (cheapest to maintain first):
+    1. Product metafields, namespace `moto`  (moto.engine_cc, moto.top_speed, ...)
+    2. Product tags  (cc:150, use:city, budget:low, ...)
+  Nothing is invented: an empty value renders nothing and the caller hides the row.
+
+  Fields: cc, speed, economy, tank, weight, gearbox, warranty, use (comma list of
+  use keys: city, work, travel, offroad), use_label (Arabic labels for `use`).
+{%- endcomment -%}
+
+{%- liquid
+  assign mf = moto.metafields.moto
+  assign out = ''
+
+  case field
+    when 'cc'
+      assign out = mf.engine_cc.value | default: mf.engine_cc
+    when 'speed'
+      assign out = mf.top_speed.value | default: mf.top_speed
+    when 'economy'
+      assign out = mf.fuel_economy.value | default: mf.fuel_economy
+    when 'tank'
+      assign out = mf.tank_capacity.value | default: mf.tank_capacity
+    when 'weight'
+      assign out = mf.weight.value | default: mf.weight
+    when 'gearbox'
+      assign out = mf.gearbox.value | default: mf.gearbox
+    when 'warranty'
+      assign out = mf.warranty.value | default: mf.warranty
+    when 'use', 'use_label'
+      assign use_keys = mf.use_cases.value | join: ','
+      if use_keys == blank
+        for tag in moto.tags
+          if tag contains 'use:'
+            assign k = tag | remove: 'use:' | strip | downcase
+            assign use_keys = use_keys | append: ',' | append: k
+          endif
+        endfor
+        assign use_keys = use_keys | remove_first: ','
+      endif
+      if field == 'use'
+        assign out = use_keys
+      else
+        assign labels = ''
+        assign keys = use_keys | split: ','
+        for k in keys
+          case k
+            when 'city'
+              assign l = 'تنقّل يومي'
+            when 'work'
+              assign l = 'شغل وتوصيل'
+            when 'travel'
+              assign l = 'سفر ومسافات'
+            when 'offroad'
+              assign l = 'طرق وعرة'
+            else
+              assign l = k
+          endcase
+          assign labels = labels | append: '، ' | append: l
+        endfor
+        assign out = labels | remove_first: '، '
+      endif
+  endcase
+
+  if out == blank and field == 'cc'
+    for tag in moto.tags
+      if tag contains 'cc:'
+        assign out = tag | remove: 'cc:' | strip
+        break
+      endif
+    endfor
+  endif
+-%}
+{{- out -}}

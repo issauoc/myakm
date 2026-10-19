@@ -1,0 +1,16 @@
+{%- comment -%}
+  One compatible part / bearing inside the owner kit. A plain link with price
+  and stock — no add-to-cart pressure; the customer opens it if they need it.
+  Called as: {% render 'moto-kit-item', item: product %}
+{%- endcomment -%}
+<li class="mk-kit__item{% unless item.available %} is-out{% endunless %}">
+  <a href="{{ item.url }}">
+    {%- if item.featured_image -%}
+      {{ item.featured_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: '', width: 80, height: 80 }}
+    {%- endif -%}
+    <span class="mk-kit__name">{{ item.title }}</span>
+    <span class="mk-kit__price">
+      {%- if item.available -%}{{ item.price | money_without_trailing_zeros }}{%- else -%}غير متاح حاليًا{%- endif -%}
+    </span>
+  </a>
+</li>

@@ -1,0 +1,78 @@
+{%- comment -%}
+  MYAKM Ride — owner kit for one motorcycle model.
+  Called as: {% render 'moto-owner-kit', moto: product, owner: is_owner %}
+
+  The bridge to the rest of MYAKM (parts, bearings, technical guides). It never
+  sits in the buy path: on the product page it is a closed panel below the
+  decision; it opens itself only when the visitor already owns this model
+  (`owner` = true, or the page was opened with #owner-kit, e.g. from the order
+  confirmation email). Renders nothing at all if the model has no linked data.
+
+  Data (all optional, product metafields):
+    moto.guide          url or page reference — maintenance / technical guide
+    moto.service_note   multi-line text — e.g. "أول صيانة عند 1000 كم"
+    moto.parts          list of product references — spare parts & consumables
+    moto.bearings       list of product references — bearings that fit this model
+{%- endcomment -%}
+
+{%- liquid
+  assign mf = moto.metafields.moto
+  assign guide_url = ''
+  assign guide_title = 'دليل الصيانة والاستخدام'
+  if mf.guide.type == 'page_reference'
+    assign guide_url = mf.guide.value.url
+    assign guide_title = mf.guide.value.title
+  elsif mf.guide.value != blank
+    assign guide_url = mf.guide.value
+  endif
+  assign service_note = mf.service_note.value
+  assign parts = mf.parts.value
+  assign bearings = mf.bearings.value
+  assign parts_count = parts.count | default: 0
+  assign bearings_count = bearings.count | default: 0
+  assign total = parts_count | plus: bearings_count
+-%}
+
+{%- if guide_url != blank or service_note != blank or total > 0 -%}
+  <details class="mk-kit" id="owner-kit" data-mk-kit {% if owner %}open{% endif %}>
+    <summary class="mk-kit__sum">
+      <span class="mk-kit__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </span>
+      <span class="mk-kit__text">
+        <strong>{% if owner %}موتوسيكلك: كل اللي هتحتاجه{% else %}الصيانة وقطع الغيار لهذا الموديل{% endif %}</strong>
+        <small>
+          {%- if guide_url != blank -%}دليل الصيانة{%- endif -%}
+          {%- if guide_url != blank and total > 0 %} · {% endif -%}
+          {%- if total > 0 -%}{{ total }} قطعة متوافقة من مخزون MYAKM{%- endif -%}
+        </small>
+      </span>
+      <svg class="mk-kit__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+    </summary>
+
+    <div class="mk-kit__body">
+      {%- if service_note != blank or guide_url != blank -%}
+        <div class="mk-kit__guide">
+          {%- if service_note != blank -%}<p>{{ service_note | newline_to_br }}</p>{%- endif -%}
+          {%- if guide_url != blank -%}
+            <a href="{{ guide_url }}">{{ guide_title }} ←</a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if parts_count > 0 -%}
+        <h3 class="mk-kit__h">قطع غيار ومستهلكات</h3>
+        <ul class="mk-kit__grid" role="list">
+          {%- for p in parts limit: 8 -%}{%- render 'moto-kit-item', item: p -%}{%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if bearings_count > 0 -%}
+        <h3 class="mk-kit__h">رولمان بلي مناسب للموديل</h3>
+        <ul class="mk-kit__grid" role="list">
+          {%- for p in bearings limit: 8 -%}{%- render 'moto-kit-item', item: p -%}{%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </details>
+{%- endif -%}

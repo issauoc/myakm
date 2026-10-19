@@ -1,0 +1,470 @@
+{%- comment -%}
+  MYAKM Ride — Motorcycle product page
+  File: sections/moto-product.liquid  (template: product.motorcycle.json)
+
+  One decision, one primary action. Above the fold: photo, name, what it is for,
+  price, real stock, colour, "اشترِ الآن". Everything else waits its turn:
+    1. Key specs (only the ones that have data)
+    2. Model details (collapsed)
+    3. Owner kit — parts, bearings, guide (collapsed; opens itself for owners)
+  No cross-sell in the buy box, no product-form apps, no extra tools.
+
+  "اشترِ الآن" and "أضف إلى السلة" are the same native product form; each button
+  carries its own return_to, so buying works with zero JavaScript. The small
+  script below only swaps variant price / stock / image when the colour changes.
+
+  Product metafields (namespace `moto`, all optional — empty rows are hidden):
+    engine_cc, top_speed, fuel_economy, tank_capacity, weight   (number or text)
+    gearbox, warranty                                            (text)
+    use_cases            list of text: city | work | travel | offroad
+                         (or product tags use:city, use:work, ...)
+    guide, service_note, parts, bearings   -> see snippets/moto-owner-kit.liquid
+{%- endcomment -%}
+
+{%- capture m_cc -%}{%- render 'moto-data', moto: product, field: 'cc' -%}{%- endcapture -%}
+{%- capture m_speed -%}{%- render 'moto-data', moto: product, field: 'speed' -%}{%- endcapture -%}
+{%- capture m_economy -%}{%- render 'moto-data', moto: product, field: 'economy' -%}{%- endcapture -%}
+{%- capture m_tank -%}{%- render 'moto-data', moto: product, field: 'tank' -%}{%- endcapture -%}
+{%- capture m_weight -%}{%- render 'moto-data', moto: product, field: 'weight' -%}{%- endcapture -%}
+{%- capture m_gearbox -%}{%- render 'moto-data', moto: product, field: 'gearbox' -%}{%- endcapture -%}
+{%- capture m_warranty -%}{%- render 'moto-data', moto: product, field: 'warranty' -%}{%- endcapture -%}
+{%- capture m_use_label -%}{%- render 'moto-data', moto: product, field: 'use_label' -%}{%- endcapture -%}
+
+{%- liquid
+  assign uid = section.id
+  assign current = product.selected_or_first_available_variant
+  assign back_url = section.settings.back_url | default: collection.url
+  if back_url == blank
+    assign back_url = routes.collections_url
+  endif
+
+  # Owner = a signed-in customer who has already ordered this model.
+  assign is_owner = false
+  if customer
+    for order in customer.orders limit: 20
+      for li in order.line_items
+        if li.product_id == product.id
+          assign is_owner = true
+          break
+        endif
+      endfor
+      if is_owner
+        break
+      endif
+    endfor
+  endif
+
+  assign wa_number = section.settings.whatsapp | remove: '+' | remove: ' ' | remove: '-'
+  assign wa_text = 'مرحبًا، عندي سؤال عن ' | append: product.title | append: ' - ' | append: shop.url | append: product.url | url_encode
+-%}
+
+<div class="mk-pdp" id="mk-pdp-{{ uid }}" data-mk-pdp
+  style="--mk-accent: {{ section.settings.accent | default: '#ff5a1f' }};" dir="rtl" lang="ar">
+  <div class="mk-pdp__wrap">
+
+    <a class="mk-pdp__back" href="{{ back_url }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      كل الموتوسيكلات
+    </a>
+
+    <div class="mk-pdp__top">
+      {%- comment -%} ---------- GALLERY ---------- {%- endcomment -%}
+      <div class="mk-pdp__gallery">
+        <div class="mk-pdp__stage">
+          {%- assign main_img = current.featured_image | default: product.featured_image -%}
+          {%- if main_img -%}
+            {{ main_img | image_url: width: 1400 | image_tag:
+              class: 'mk-pdp__img',
+              data-mk-pdp-img: '',
+              widths: '600, 900, 1200, 1400',
+              sizes: '(min-width: 1024px) 55vw, 100vw',
+              fetchpriority: 'high',
+              alt: product.title
+            }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'mk-pdp__img' }}
+          {%- endif -%}
+        </div>
+        {%- if product.images.size > 1 -%}
+          <div class="mk-pdp__thumbs" role="list">
+            {%- for img in product.images limit: 8 -%}
+              <button type="button" class="mk-pdp__thumb{% if img.id == main_img.id %} is-active{% endif %}" role="listitem"
+                data-mk-pdp-thumb data-src="{{ img | image_url: width: 1400 }}" aria-label="صورة {{ forloop.index }}">
+                {{ img | image_url: width: 160 | image_tag: loading: 'lazy', alt: '' }}
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} ---------- BUY BOX ---------- {%- endcomment -%}
+      <div class="mk-pdp__buy">
+        {%- if m_use_label != blank -%}<p class="mk-pdp__use">مناسب لـ: {{ m_use_label }}</p>{%- endif -%}
+        <h1 class="mk-pdp__title">{{ product.title }}</h1>
+
+        {%- if m_cc != blank or m_economy != blank -%}
+          <p class="mk-pdp__oneliner">
+            {%- if m_cc != blank -%}{{ m_cc }} سي سي{%- endif -%}
+            {%- if m_cc != blank and m_economy != blank %} · {% endif -%}
+            {%- if m_economy != blank -%}{{ m_economy }} كم/لتر{%- endif -%}
+          </p>
+        {%- endif -%}
+
+        <div class="mk-pdp__price">
+          <span data-mk-pdp-price>{{ current.price | money_without_trailing_zeros }}</span>
+          <s data-mk-pdp-compare {% unless current.compare_at_price > current.price %}hidden{% endunless %}>{{ current.compare_at_price | money_without_trailing_zeros }}</s>
+        </div>
+
+        <p class="mk-pdp__stock" data-mk-pdp-stock></p>
+
+        {%- form 'product', product, class: 'mk-pdp__form', data-mk-pdp-form: '' -%}
+          <input type="hidden" name="id" value="{{ current.id }}" data-mk-pdp-id>
+
+          {%- unless product.has_only_default_variant -%}
+            {%- for option in product.options_with_values -%}
+              <fieldset class="mk-pdp__opt">
+                <legend>{{ option.name }}: <span data-mk-pdp-optval="{{ forloop.index0 }}">{{ option.selected_value }}</span></legend>
+                <div class="mk-pdp__pills">
+                  {%- for value in option.values -%}
+                    <label class="mk-pdp__pill">
+                      <input type="radio" name="mk-opt-{{ uid }}-{{ forloop.parentloop.index0 }}" value="{{ value | escape }}"
+                        data-mk-pdp-opt="{{ forloop.parentloop.index0 }}" {% if option.selected_value == value %}checked{% endif %}>
+                      <span>{{ value }}</span>
+                    </label>
+                  {%- endfor -%}
+                </div>
+              </fieldset>
+            {%- endfor -%}
+          {%- endunless -%}
+
+          <button type="submit" name="return_to" value="/checkout" class="mk-pdp__cta" data-mk-pdp-buy {% unless current.available %}disabled{% endunless %}>
+            {%- if current.available -%}اشترِ الآن{%- else -%}غير متاح حاليًا{%- endif -%}
+          </button>
+          <button type="submit" name="return_to" value="/cart" class="mk-pdp__cta-2" data-mk-pdp-add {% unless current.available %}hidden{% endunless %}>
+            أو أضفه إلى السلة
+          </button>
+        {%- endform -%}
+
+        {%- assign r1 = section.settings.reassure_1 -%}
+        {%- assign r2 = section.settings.reassure_2 -%}
+        {%- assign r3 = section.settings.reassure_3 -%}
+        {%- if m_warranty != blank or r1 != blank or r2 != blank or r3 != blank -%}
+          <ul class="mk-pdp__assure" role="list">
+            {%- if m_warranty != blank -%}<li>ضمان {{ m_warranty }}</li>{%- endif -%}
+            {%- if r1 != blank -%}<li>{{ r1 }}</li>{%- endif -%}
+            {%- if r2 != blank -%}<li>{{ r2 }}</li>{%- endif -%}
+            {%- if r3 != blank -%}<li>{{ r3 }}</li>{%- endif -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if wa_number != blank -%}
+          <a class="mk-pdp__ask" href="https://wa.me/{{ wa_number }}?text={{ wa_text }}" target="_blank" rel="noopener">
+            محتار؟ اسألنا على واتساب
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- comment -%} ---------- AFTER THE DECISION ---------- {%- endcomment -%}
+    <div class="mk-pdp__more">
+      {%- if is_owner -%}{%- render 'moto-owner-kit', moto: product, owner: true -%}{%- endif -%}
+
+      {%- if m_cc != blank or m_speed != blank or m_economy != blank or m_tank != blank or m_weight != blank or m_gearbox != blank -%}
+        <section class="mk-pdp__specs" aria-labelledby="mk-pdp-specs-{{ uid }}">
+          <h2 id="mk-pdp-specs-{{ uid }}">المواصفات الأساسية</h2>
+          <dl>
+            {%- if m_cc != blank -%}<div><dt>سعة المحرك</dt><dd>{{ m_cc }} سي سي</dd></div>{%- endif -%}
+            {%- if m_economy != blank -%}<div><dt>استهلاك البنزين</dt><dd>{{ m_economy }} كم/لتر</dd></div>{%- endif -%}
+            {%- if m_speed != blank -%}<div><dt>السرعة القصوى</dt><dd>{{ m_speed }} كم/س</dd></div>{%- endif -%}
+            {%- if m_tank != blank -%}<div><dt>خزان الوقود</dt><dd>{{ m_tank }} لتر</dd></div>{%- endif -%}
+            {%- if m_weight != blank -%}<div><dt>الوزن</dt><dd>{{ m_weight }} كجم</dd></div>{%- endif -%}
+            {%- if m_gearbox != blank -%}<div><dt>ناقل الحركة</dt><dd>{{ m_gearbox }}</dd></div>{%- endif -%}
+          </dl>
+        </section>
+      {%- endif -%}
+
+      {%- if product.description != blank -%}
+        <details class="mk-pdp__desc">
+          <summary>تفاصيل الموديل</summary>
+          <div class="mk-pdp__rte">{{ product.description }}</div>
+        </details>
+      {%- endif -%}
+
+      {%- unless is_owner -%}{%- render 'moto-owner-kit', moto: product, owner: false -%}{%- endunless -%}
+    </div>
+  </div>
+
+  {%- comment -%} Mobile: the primary action stays one thumb away once the buy box scrolls out. {%- endcomment -%}
+  <div class="mk-pdp__dock" data-mk-pdp-dock hidden>
+    <div>
+      <strong>{{ product.title }}</strong>
+      <span data-mk-pdp-dock-price>{{ current.price | money_without_trailing_zeros }}</span>
+    </div>
+    <button type="button" class="mk-pdp__cta" data-mk-pdp-dock-buy {% unless current.available %}disabled{% endunless %}>اشترِ الآن</button>
+  </div>
+
+  <script type="application/json" data-mk-pdp-variants>
+    [
+      {%- for v in product.variants -%}
+        {
+          "id": {{ v.id }},
+          "options": {{ v.options | json }},
+          "available": {{ v.available | json }},
+          "price": {{ v.price | money_without_trailing_zeros | json }},
+          "compare": {% if v.compare_at_price > v.price %}{{ v.compare_at_price | money_without_trailing_zeros | json }}{% else %}null{% endif %},
+          "low": {% if v.inventory_management == 'shopify' and v.inventory_quantity > 0 and v.inventory_quantity <= 3 %}{{ v.inventory_quantity }}{% else %}0{% endif %},
+          "image": {% if v.featured_image %}{{ v.featured_image | image_url: width: 1400 | json }}{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+  <script type="application/ld+json">{{ product | structured_data }}</script>
+</div>
+
+<style>
+  .mk-pdp {
+    --mk-ink: #0b0f17; --mk-ink-soft: #4b5563; --mk-mute: #9ca3af;
+    --mk-line: #e5e7eb; --mk-soft: #f3f4f6; --mk-ok: #059669; --mk-warn: #b45309;
+    --mk-radius: 16px;
+    color: var(--mk-ink); line-height: 1.55;
+  }
+  .mk-pdp *, .mk-pdp *::before, .mk-pdp *::after { box-sizing: border-box; }
+  .mk-pdp button { font: inherit; }
+  .mk-pdp :focus-visible { outline: 3px solid var(--mk-accent); outline-offset: 2px; border-radius: 8px; }
+  .mk-pdp img { display: block; max-width: 100%; height: auto; }
+  .mk-pdp .mk-pdp__wrap { max-width: 1240px; margin: 0 auto; padding: 16px 16px 48px; }
+
+  .mk-pdp .mk-pdp__back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--mk-ink-soft); text-decoration: none; }
+  .mk-pdp .mk-pdp__back svg { width: 16px; height: 16px; }
+
+  .mk-pdp .mk-pdp__top { display: grid; gap: 24px; }
+
+  .mk-pdp .mk-pdp__stage { aspect-ratio: 4 / 3; background: var(--mk-soft); border-radius: var(--mk-radius); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .mk-pdp .mk-pdp__img { width: 100%; height: 100%; object-fit: contain; }
+  .mk-pdp svg.mk-pdp__img { fill: var(--mk-mute); }
+  .mk-pdp .mk-pdp__thumbs { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+  .mk-pdp .mk-pdp__thumb { flex: 0 0 64px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: 10px; background: var(--mk-soft); overflow: hidden; cursor: pointer; }
+  .mk-pdp .mk-pdp__thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .mk-pdp .mk-pdp__thumb.is-active { border-color: var(--mk-ink); }
+
+  .mk-pdp .mk-pdp__use { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--mk-accent); }
+  .mk-pdp .mk-pdp__title { margin: 0; font-size: clamp(24px, 3.4vw, 34px); font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
+  .mk-pdp .mk-pdp__oneliner { margin: 6px 0 0; color: var(--mk-ink-soft); font-size: 14px; }
+  .mk-pdp .mk-pdp__price { display: flex; align-items: baseline; gap: 10px; margin: 16px 0 4px; }
+  .mk-pdp .mk-pdp__price span { font-size: 30px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .mk-pdp .mk-pdp__price s { color: var(--mk-mute); font-size: 16px; }
+  .mk-pdp .mk-pdp__price s[hidden] { display: none; }
+  .mk-pdp .mk-pdp__stock { margin: 0 0 18px; font-size: 13.5px; font-weight: 700; min-height: 1.4em; }
+  .mk-pdp .mk-pdp__stock.is-ok { color: var(--mk-ok); }
+  .mk-pdp .mk-pdp__stock.is-low { color: var(--mk-warn); }
+  .mk-pdp .mk-pdp__stock.is-out { color: var(--mk-ink-soft); }
+
+  .mk-pdp .mk-pdp__opt { margin: 0 0 16px; padding: 0; border: 0; }
+  .mk-pdp .mk-pdp__opt legend { padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--mk-ink-soft); }
+  .mk-pdp .mk-pdp__opt legend span { color: var(--mk-ink); }
+  .mk-pdp .mk-pdp__pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mk-pdp .mk-pdp__pill input { position: absolute; opacity: 0; pointer-events: none; }
+  .mk-pdp .mk-pdp__pill span { display: inline-flex; align-items: center; min-height: 42px; padding: 8px 16px; border: 1px solid var(--mk-line); border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .mk-pdp .mk-pdp__pill input:checked + span { border-color: var(--mk-ink); box-shadow: inset 0 0 0 1px var(--mk-ink); }
+  .mk-pdp .mk-pdp__pill input:focus-visible + span { outline: 3px solid var(--mk-accent); outline-offset: 2px; }
+  .mk-pdp .mk-pdp__pill.is-out span { color: var(--mk-mute); text-decoration: line-through; }
+
+  .mk-pdp .mk-pdp__cta {
+    display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; padding: 12px 20px;
+    border: 0; border-radius: 14px; background: var(--mk-accent); color: #fff; font-size: 17px; font-weight: 800; cursor: pointer;
+    transition: filter .15s, transform .1s;
+  }
+  .mk-pdp .mk-pdp__cta:hover:not(:disabled) { filter: brightness(.94); }
+  .mk-pdp .mk-pdp__cta:active:not(:disabled) { transform: scale(.99); }
+  .mk-pdp .mk-pdp__cta:disabled { background: var(--mk-line); color: var(--mk-ink-soft); cursor: not-allowed; }
+  .mk-pdp .mk-pdp__cta-2 { display: block; width: 100%; margin-top: 6px; padding: 10px; border: 0; background: none; color: var(--mk-ink-soft); font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .mk-pdp .mk-pdp__cta-2[hidden] { display: none; }
+
+  .mk-pdp .mk-pdp__assure { list-style: none; margin: 18px 0 0; padding: 14px 16px; display: grid; gap: 8px; border-radius: 12px; background: var(--mk-soft); font-size: 13.5px; }
+  .mk-pdp .mk-pdp__assure li { display: flex; gap: 8px; align-items: flex-start; }
+  .mk-pdp .mk-pdp__assure li::before { content: "✓"; color: var(--mk-ok); font-weight: 800; }
+  .mk-pdp .mk-pdp__ask { display: inline-block; margin-top: 14px; font-size: 13.5px; font-weight: 600; color: var(--mk-ink-soft); }
+
+  .mk-pdp .mk-pdp__more { display: grid; gap: 16px; max-width: 820px; margin-top: 40px; }
+  .mk-pdp .mk-pdp__specs h2 { margin: 0 0 12px; font-size: 18px; font-weight: 800; }
+  .mk-pdp .mk-pdp__specs dl { margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .mk-pdp .mk-pdp__specs dl div { padding: 12px 14px; border: 1px solid var(--mk-line); border-radius: 12px; }
+  .mk-pdp .mk-pdp__specs dt { font-size: 12px; color: var(--mk-mute); font-weight: 600; }
+  .mk-pdp .mk-pdp__specs dd { margin: 2px 0 0; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  .mk-pdp .mk-pdp__desc, .mk-pdp .mk-kit { border: 1px solid var(--mk-line); border-radius: var(--mk-radius); background: #fff; }
+  .mk-pdp .mk-pdp__desc > summary { padding: 16px 18px; font-weight: 800; cursor: pointer; }
+  .mk-pdp .mk-pdp__rte { padding: 0 18px 18px; color: var(--mk-ink-soft); font-size: 15px; }
+
+  /* Owner kit */
+  .mk-pdp .mk-kit > summary, .mk-pdp .mk-pdp__desc > summary { list-style: none; }
+  .mk-pdp .mk-kit > summary::-webkit-details-marker, .mk-pdp .mk-pdp__desc > summary::-webkit-details-marker { display: none; }
+  .mk-pdp .mk-kit__sum { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+  .mk-pdp .mk-kit__icon { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; background: var(--mk-soft); display: flex; align-items: center; justify-content: center; }
+  .mk-pdp .mk-kit__icon svg { width: 20px; height: 20px; color: var(--mk-accent); }
+  .mk-pdp .mk-kit__text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .mk-pdp .mk-kit__text small { color: var(--mk-ink-soft); font-size: 12.5px; }
+  .mk-pdp .mk-kit__chev { width: 18px; height: 18px; color: var(--mk-mute); transition: transform .2s; }
+  .mk-pdp .mk-kit[open] .mk-kit__chev { transform: rotate(180deg); }
+  .mk-pdp .mk-kit[open] { border-color: var(--mk-accent); }
+  .mk-pdp .mk-kit__body { padding: 0 16px 18px; }
+  .mk-pdp .mk-kit__guide { padding: 12px 14px; border-radius: 12px; background: var(--mk-soft); font-size: 14px; }
+  .mk-pdp .mk-kit__guide p { margin: 0 0 6px; }
+  .mk-pdp .mk-kit__guide a { font-weight: 700; color: var(--mk-ink); }
+  .mk-pdp .mk-kit__h { margin: 16px 0 8px; font-size: 14px; font-weight: 800; }
+  .mk-pdp .mk-kit__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .mk-pdp .mk-kit__item a { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 10px; border: 1px solid var(--mk-line); border-radius: 12px; color: inherit; text-decoration: none; }
+  .mk-pdp .mk-kit__item img { width: 56px; height: 56px; object-fit: contain; }
+  .mk-pdp .mk-kit__name { font-size: 13px; font-weight: 600; line-height: 1.35; }
+  .mk-pdp .mk-kit__price { font-size: 13px; font-weight: 800; margin-top: auto; }
+  .mk-pdp .mk-kit__item.is-out .mk-kit__price { color: var(--mk-mute); font-weight: 600; }
+
+  .mk-pdp .mk-pdp__dock {
+    position: fixed; inset: auto 0 0 0; z-index: 20; display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid var(--mk-line);
+    box-shadow: 0 -8px 24px -12px rgba(0,0,0,.2);
+  }
+  .mk-pdp .mk-pdp__dock[hidden] { display: none; }
+  .mk-pdp .mk-pdp__dock > div { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .mk-pdp .mk-pdp__dock strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mk-pdp .mk-pdp__dock span { font-weight: 800; }
+  .mk-pdp .mk-pdp__dock .mk-pdp__cta { width: auto; min-height: 46px; font-size: 15px; }
+
+  @media (min-width: 768px) {
+    .mk-pdp .mk-pdp__wrap { padding: 24px 32px 64px; }
+    .mk-pdp .mk-pdp__specs dl { grid-template-columns: repeat(3, 1fr); }
+    .mk-pdp .mk-kit__grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .mk-pdp .mk-pdp__top { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+    .mk-pdp .mk-pdp__buy { position: sticky; top: calc(var(--sticky-area-height, 0px) + 24px); }
+    .mk-pdp .mk-pdp__dock { display: none !important; }
+  }
+  @media (prefers-reduced-motion: reduce) { .mk-pdp * { transition: none !important; } }
+</style>
+
+<script>
+  (function () {
+    'use strict';
+    var root = document.getElementById('mk-pdp-{{ uid }}');
+    if (!root || root.dataset.mkInit === '1') return;
+    root.dataset.mkInit = '1';
+
+    var variants = JSON.parse(root.querySelector('[data-mk-pdp-variants]').textContent);
+    var idInput = root.querySelector('[data-mk-pdp-id]');
+    var priceEl = root.querySelector('[data-mk-pdp-price]');
+    var compareEl = root.querySelector('[data-mk-pdp-compare]');
+    var stockEl = root.querySelector('[data-mk-pdp-stock]');
+    var buyBtn = root.querySelector('[data-mk-pdp-buy]');
+    var addBtn = root.querySelector('[data-mk-pdp-add]');
+    var img = root.querySelector('[data-mk-pdp-img]');
+    var thumbs = Array.prototype.slice.call(root.querySelectorAll('[data-mk-pdp-thumb]'));
+    var radios = Array.prototype.slice.call(root.querySelectorAll('[data-mk-pdp-opt]'));
+    var dock = root.querySelector('[data-mk-pdp-dock]');
+    var dockPrice = root.querySelector('[data-mk-pdp-dock-price]');
+    var dockBuy = root.querySelector('[data-mk-pdp-dock-buy]');
+
+    function current() {
+      var id = +idInput.value;
+      return variants.filter(function (v) { return v.id === id; })[0] || variants[0];
+    }
+
+    function showImage(src) {
+      if (!img || !src) return;
+      img.removeAttribute('srcset');
+      img.src = src;
+      thumbs.forEach(function (t) { t.classList.toggle('is-active', t.dataset.src === src); });
+    }
+
+    function paint(v) {
+      priceEl.textContent = v.price;
+      if (dockPrice) dockPrice.textContent = v.price;
+      compareEl.hidden = !v.compare;
+      if (v.compare) compareEl.textContent = v.compare;
+      stockEl.className = 'mk-pdp__stock ' + (!v.available ? 'is-out' : v.low ? 'is-low' : 'is-ok');
+      stockEl.textContent = !v.available ? 'هذا الاختيار غير متاح حاليًا'
+        : v.low ? 'متاح — آخر ' + v.low + ' في المخزون'
+        : 'متاح في المخزون وجاهز للتسليم';
+      buyBtn.disabled = !v.available;
+      buyBtn.textContent = v.available ? 'اشترِ الآن' : 'غير متاح حاليًا';
+      if (addBtn) addBtn.hidden = !v.available;
+      if (dockBuy) dockBuy.disabled = !v.available;
+      if (v.image) showImage(v.image);
+    }
+
+    // Grey out option values that have no available variant with the other current choices.
+    function markAvailability() {
+      var chosen = radios.filter(function (r) { return r.checked; }).map(function (r) { return r.value; });
+      radios.forEach(function (r) {
+        var i = +r.dataset.mkPdpOpt;
+        var ok = variants.some(function (v) {
+          return v.available && v.options.every(function (o, j) { return j === i ? o === r.value : o === chosen[j]; });
+        });
+        r.closest('.mk-pdp__pill').classList.toggle('is-out', !ok);
+      });
+    }
+
+    radios.forEach(function (r) {
+      r.addEventListener('change', function () {
+        var chosen = radios.filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
+        var v = variants.filter(function (x) { return x.options.join('|') === chosen.join('|'); })[0];
+        var label = root.querySelector('[data-mk-pdp-optval="' + r.dataset.mkPdpOpt + '"]');
+        if (label) label.textContent = r.value;
+        if (!v) { buyBtn.disabled = true; stockEl.className = 'mk-pdp__stock is-out'; stockEl.textContent = 'هذا الاختيار غير متوفر'; return; }
+        idInput.value = v.id;
+        var url = new URL(location.href);
+        url.searchParams.set('variant', v.id);
+        history.replaceState(history.state, '', url);
+        paint(v);
+        markAvailability();
+      });
+    });
+
+    thumbs.forEach(function (t) { t.addEventListener('click', function () { showImage(t.dataset.src); }); });
+
+    paint(current());
+    if (radios.length) markAvailability();
+
+    // Mobile dock: visible only while the buy button itself is off-screen.
+    if (dock && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        dock.hidden = entries[0].isIntersecting || entries[0].boundingClientRect.top > 0;
+      }).observe(buyBtn);
+      dockBuy.addEventListener('click', function () { buyBtn.click(); });
+    }
+
+    // Arriving from the order email / thank-you page (#owner-kit): open the kit and bring it into view.
+    var kit = root.querySelector('[data-mk-kit]');
+    if (kit && location.hash === '#owner-kit') {
+      kit.open = true;
+      kit.scrollIntoView({ block: 'start' });
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "MYAKM Motorcycle",
+  "tag": "section",
+  "class": "mk-pdp-section",
+  "settings": [
+    {
+      "type": "url",
+      "id": "back_url",
+      "label": "رابط صفحة كل الموتوسيكلات",
+      "info": "يُستخدم في رابط الرجوع. الافتراضي: المجموعة التي جاء منها العميل."
+    },
+    { "type": "header", "content": "رسائل الطمأنة (اختياري، سطر واحد لكل رسالة)" },
+    { "type": "text", "id": "reassure_1", "label": "رسالة 1", "default": "مساعدة في الترخيص والأوراق" },
+    { "type": "text", "id": "reassure_2", "label": "رسالة 2", "default": "معاينة واستلام من الفرع أو توصيل" },
+    { "type": "text", "id": "reassure_3", "label": "رسالة 3" },
+    {
+      "type": "text",
+      "id": "whatsapp",
+      "label": "رقم واتساب للاستفسار",
+      "info": "اتركه فارغًا لإخفاء رابط الاستفسار. مثال: 201000000000"
+    },
+    { "type": "color", "id": "accent", "label": "لون التمييز", "default": "#ff5a1f" }
+  ]
+}
+{% endschema %}
