@@ -1,0 +1,106 @@
+# Retailers: RealTruck, Rough Country, Omix-ADA, 4 Wheel Parts, Amazon
+
+**IMPORTANT METHODOLOGY NOTE (read first):** This session's network access blocked direct fetches to every target domain attempted — `realtruck.com`, `roughcountry.com`, `4wheelparts.com`, `omix-ada.com`, `amazon.com`, `quadratec.com`, `web.archive.org`, and `baymard.com` all failed DNS resolution (`ENOTFOUND`) when hit with WebFetch, meaning live browsing and Wayback Machine fallback were both unavailable in this environment. All findings below come from WebSearch results only (press coverage, agency case studies, third-party review sites, forum threads, vendor blogs). This is a materially weaker evidence base than direct site inspection — most of the specific UI-level questions in the brief (exact grid column counts, hex colors, hover-state behavior, exact headline copy, badge iconography) could **not** be verified and are flagged as Gaps rather than guessed. The report-writer should treat this file as a partial/backup source and, if possible, have another researcher attempt live browsing or screenshots of these five sites directly, since almost none of the detailed visual/UX specifics requested in the brief were obtainable through search alone.
+
+## Hero/banner style: imagery, copy tone, video/motion, overlay text, mobile vs desktop
+
+### Takeaway
+RealTruck has deliberately repositioned itself from a transactional parts e-tailer to an "adventure lifestyle" brand with agency-produced photography, video, and influencer content as the stated creative strategy; verifiable detail on Rough Country, Omix-ADA, 4 Wheel Parts, and Amazon's actual hero/banner treatments could not be obtained in this session.
+
+### Cited Findings
+- RealTruck hired agency Tombras in 2021 for a full rebrand (name, website, social) intended to transition the company "from DTC to lifestyle brand" — the stated goal was to position RealTruck as a brand for truck/off-road enthusiasts pursuing "life's adventures," not just a parts retailer. — [Adweek](https://www.adweek.com/agencies/how-tombras-helped-realtruck-transition-from-dtc-to-lifestyle-brand/)
+- The RealTruck identity work (per LBB Online) explicitly included "brand colours, fonts, iconography, photography," plus a "Real Truck Crew" influencer identity program and a logo lockup — confirming photography/imagery was a deliberate, agency-led brand pillar, not incidental. — [LBB Online](https://www.lbbonline.com/news/parts-and-accessories-company-realtrucks-new-identity-brings-community-together)
+- RealTruck's rebrand launched under the campaign name "In The Real," centered on the brand community doing "Real Things in their Real Trucks" — adventure/lifestyle framing over product-spec framing. — [LBB Online](https://www.lbbonline.com/news/parts-and-accessories-company-realtrucks-new-identity-brings-community-together)
+- RealTruck's 2024 "Bring Your Truck to Life" marketing campaign (media strategy by agency Croud) ran across Meta, YouTube, and connected TV — i.e., video/motion content is central to RealTruck's brand marketing generally, consistent with a video-forward hero treatment, though the specific on-site hero implementation was not confirmed. — [RealTruck press release via search summary](https://realtruck.com/press/first-ever-eight-figure-marketing-campaign-encouraging-truck-owners-to-bring-your-truck-to-life/)
+- RealTruck produced "The Trucket List," long-form episodic branded video content (with an "award-winning producer") rather than traditional short ads, and partnered with Bear Grylls on "Adventure Garage," building out two adventure-ready vehicles (a Ford F-150 and a Toyota Tacoma) featured on the show — reinforcing an adventure-documentary visual language that likely feeds into site imagery/video. — [OVR Mag](https://www.ovrmag.com/news/realtruck-and-bear-grylls-announce-integrated-partnership-as-part-of-the-inaugural-season-of-adventure-garage-with-bear-grylls/599.article)
+- Rough Country's own category/product pages carry a persistent sitewide promotional ribbon reading "Free shipping sitewide!*" with a "View Details" link, appearing across many different vehicle/category URLs (seen on Chevy Tahoe, Suburban, Colorado pages and a Jeep bumper product page) — this is a site-wide banner element rather than a hero per se, but confirms a thin promo bar pattern sits near the top of pages. — [roughcountry.com product/category URLs via search snippets](https://www.roughcountry.com/product/jeep-heavy-duty-rear-led-bumper-10646)
+- Rough Country's customer-service page lists a "100% Satisfaction Guarantee" and a "Lifetime Replacement Warranty" as named policies. — [roughcountry.com/customer-service](https://www.roughcountry.com/customer-service/)
+
+### Inferences
+- Given the agency-documented strategic shift, RealTruck's hero banners most likely use lifestyle/adventure photography (trucks in outdoor/off-road settings, people-in-scene shots) rather than clean studio product shots, and probably incorporate video loops or embedded branded video given the stated video-first content strategy — but this is an inference from brand strategy documents, not a direct observation of the hero module itself.
+- Rough Country's "Free shipping sitewide!" ribbon appearing identically across unrelated category/product URLs suggests it is a global site-wide announcement bar (likely sticky/top-of-page) rather than a page-specific hero element — consistent with common Shopify/Magento "announcement bar" patterns rather than a large lifestyle hero image on every category page.
+
+### Gaps
+- No verified detail on Rough Country's, Omix-ADA's, 4 Wheel Parts', or Amazon's actual hero imagery style, headline copy, or video use on category pages — direct browsing was blocked.
+- No confirmation of RealTruck's actual on-page hero banner content (image/video, headline text, overlay placement) for its Jeep category pages specifically, nor any mobile-vs-desktop hero treatment differences for any of the five sites.
+- No information found on Omix-ADA's or 4 Wheel Parts' brand/marketing strategy comparable to the RealTruck Tombras case study.
+
+## Collection/category page layout: grid, promo blocks, filters, breadcrumbs, description, shop-by-vehicle
+
+### Takeaway
+Only indirect, fragmentary evidence was found (mostly about fitment-selector vendor patterns in the industry generally); no verified first-hand layout detail exists for any of the five target sites' actual Jeep category pages in this research pass.
+
+### Cited Findings
+- Rough Country category URLs are vehicle-make/model-structured, e.g. `roughcountry.com/truck-jeep-parts-and-accessories/chevy/page/6/suburban-3500-hd` and `roughcountry.com/truck-jeep-parts-and-accessories/ford/page/19/ranger-tremor` — confirming the site organizes collection pages by a make → specific-model URL hierarchy (a "shop by vehicle" taxonomy reflected in URL structure), with pagination (`/page/N/`). — [roughcountry.com URLs via search](https://www.roughcountry.com/truck-jeep-parts-and-accessories/chevy/page/6/suburban-3500-hd)
+- Year-Make-Model (YMM) fitment selectors are the industry-standard pattern for truck/Jeep/4x4 parts retailers generally: vendors describe cascading Year → Make → Model → Submodel → Engine dropdowns, with some tools persisting the shopper's selected vehicle ("garage") across pages and visits. — [Shopify app listing: Spark Fitment](https://apps.shopify.com/spark-fitment)
+- A fitment-vendor blog notes that selecting the wrong model year or trim can materially change part fitment, and that vehicle selectors "cannot account for all VIN-specific options," meaning product pages still need their own fitment notes even when a YMM selector is present. — [FCP Euro help article via search summary](https://help.fcpeuro.com/hc/en-us/articles/360021209851-How-do-I-know-if-a-part-fits)
+- Baymard Institute maintains specifically annotated "intermediary category page" and "product list category" UX examples for automotive parts retailers (Advance Auto Parts, CarParts.com, TireRack.com) and a 10-site "Automotive Parts & Specialty" benchmark rating sites across 516 UX checkpoints — this is a highly relevant source for category-page and filtering best practice in this vertical, but the detailed write-ups sit behind Baymard Premium and the site itself was unreachable in this session. — [Baymard automotive parts benchmark](https://baymard.com/ux-benchmark/collections/automotive-parts), [Baymard CarParts.com filtering example](https://baymard.com/ecommerce-design-examples/filtering-options/14510-carparts-com)
+- A Magento case study (Europa Parts, by agency Inchoo) for an automotive-parts retailer describes category pages whose content is "automatically populated with buttons that represent predefined options from the filter's dropdown menu" (i.e., the category page body itself surfaces filter shortcuts as clickable buttons/links), built around a Year-Make-Model filter. — [Inchoo case study](https://inchoo.net/work/europa-parts/)
+
+### Inferences
+- Given that Rough Country's and the YMM-vendor pattern both point to vehicle-first taxonomy, it's reasonable to infer 4 Wheel Parts and RealTruck (both large multi-brand truck/Jeep retailers) also use a Year-Make-Model vehicle selector as the primary way shoppers reach a Jeep-specific category/product grid, consistent with near-universal practice in this vertical — but this is inferred from general industry patterns, not confirmed for these specific sites.
+- Omix-ADA, as primarily a wholesale/OEM-replacement-parts manufacturer-distributor (rather than a DTC lifestyle retailer), is more likely to run a flatter, catalog-style collection page (part-number/SKU-driven, less editorial/promotional content) than RealTruck or Rough Country — but no direct evidence of Omix-ADA's actual site was found to confirm this; it is an inference from its positioning as a parts manufacturer/OEM supplier rather than a DTC brand.
+
+### Gaps
+- No verified data on desktop/mobile grid column counts for any of the five sites.
+- No verified data on filter/sort UI placement (sidebar vs. horizontal vs. drawer) for any of the five sites.
+- No verified data on breadcrumb presence/style, category description copy length/placement, or promotional/editorial blocks interspersed within the product grid for any of the five sites.
+- Omix-ADA's actual website structure (DTC storefront vs. wholesale/dealer-portal-gated catalog) could not be confirmed — search results returned only generic B2B catalog design guidance with no mentions of Omix-ADA by name.
+- Amazon's Jeep-specific category/storefront page structure is ambiguous from search: results surfaced an unrelated "Jeep Store by Amazon" (licensed merchandise, launched Nov 24, 2020 per Stellantis press release) rather than a parts category, and a separate "Amazon OEM parts shop" whose confirmed brand list (per a 2023 Autoblog article) named Toyota, Volvo, VW, and Yamaha but did not confirm or rule out Jeep. The actual "Automotive > Jeep Parts & Accessories" category/search page requested in the brief was not reachable or found via search. — [Stellantis press release](https://www.media.stellantisnorthamerica.com/newsrelease.do?id=22337), [Autoblog](https://www.autoblog.com/2023/03/14/amazon-oem-parts-shop/)
+
+## Product card design: image, hover, pricing, badges, ratings, quick-add, fitment indicators
+
+### Takeaway
+No first-hand product-card detail could be confirmed for any of the five named retailers; the only concretely sourced material concerns generic quick-view/quick-add UX best practice and Amazon's seller-side fitment-data mechanics, neither of which describes an actual rendered card.
+
+### Cited Findings
+- General e-commerce guidance (not specific to any of the five sites) states a product-card "quick view" overlay works best when it surfaces the primary image, variant selection, price, rating, and stock availability, with an add-to-cart action inside the overlay and a clear link through to the full product page; it also notes quick-view-as-hover-overlay is typically a desktop-only pattern since mobile has no hover state and the full page effectively serves as the "overlay." — [Wiser Review glossary](https://wiserreview.com/glossary/quick-view/)
+- Amazon's fitment system is seller/manufacturer-data-driven: Amazon depends on third-party sellers or manufacturers submitting ACES-format vehicle-fitment data, and doing so can enable an on-listing "fitment guide" widget. This implies Amazon's own card/listing-level fitment indicator (e.g., "Fits your Jeep Wrangler") is conditional on seller data quality, not a guaranteed feature on every listing. — [pcfitment.com vendor blog](https://blog.pcfitment.com/amazon-fitment-data-automotive-aftermarket-selling/)
+- Amazon's automotive parts storefront traces back to a 2006 launch with a "Part Finder" tool covering roughly 10,000 American car/truck models for vehicle-specific part lookup — establishing that vehicle-fit search has been a long-standing core feature of Amazon's automotive category, though the current (2024–2026) on-card UI implementation was not found. — [press.aboutamazon.com 2006 release](https://press.aboutamazon.com/2006/10/amazon-com-launches-new-automotive-parts-and-accessories-store-with-over-1-million-automotive-products-available-100-000-items-eligible-for-free-super-saver-shipping-and-amazon-prime)
+
+### Inferences
+- None with sufficient evidentiary grounding to state here; this question could not be reliably answered from the sources this session could reach.
+
+### Gaps
+- No verified detail on image treatment, hover states, strikethrough/sale pricing display, bundle pricing, promotional badges, on-card star ratings/review counts, quick-add buttons, or on-card fitment indicators for RealTruck, Rough Country, Omix-ADA, or 4 Wheel Parts.
+- No verified detail on Amazon's current product-card layout for automotive search results (star rating placement, Prime badge, "Amazon's Choice"/"Overall Pick" badge, sponsored-listing labeling, or "frequently bought together" widget) — search only returned seller/vendor marketing content about fitment-data submission, not descriptions of the rendered shopper-facing card.
+
+## Trust signals: warranty, shipping thresholds, guaranteed fit, install guides, review widgets, brand logos
+
+### Takeaway
+Only Rough Country yielded directly sourced trust-signal language (sitewide free-shipping banner, a named satisfaction guarantee and lifetime warranty); no comparable confirmed detail exists for the other four sites, and third-party review-aggregator data for 4 Wheel Parts suggests its real-world trust reputation is mixed despite whatever on-site trust badging it may use.
+
+### Cited Findings
+- Rough Country displays a recurring "Free shipping sitewide!*" promotional banner across category and product pages (the asterisk implies exclusions detailed via a "View Details" link). — [roughcountry.com, multiple URLs via search](https://www.roughcountry.com/product/configurable/ford-led-fog-light-kit-70831c)
+- Rough Country's customer-service page names a "100% Satisfaction Guarantee" and a "Lifetime Replacement Warranty" as standing policies. — [roughcountry.com/customer-service](https://www.roughcountry.com/customer-service/)
+- 4 Wheel Parts' third-party review profiles are decidedly mixed and skew negative on some regional Trustpilot pages: Swedish Trustpilot shows a 2.5/5 TrustScore, Danish Trustpilot shows 2/5. Complaints cited include inaccurate stock/ship-date claims, missing mounting hardware, and a damaged-wheel dispute (2019, via PissedConsumer). One ResellerRatings reviewer rated the return/replacement-policy experience 3.25/5, while others praised fast shipping and in-store pickup after online ordering (buy-online-pickup-in-store). — [Trustpilot (SE)](https://se.trustpilot.com/review/www.4wheelparts.com), [Trustpilot (DK)](https://dk.trustpilot.com/review/www.4wheelparts.com), [PissedConsumer](https://www.pissedconsumer.com/people/1925560.html)
+- Amazon's fitment ecosystem is explicitly framed by vendors as a way to "reduce returns" by preventing wrong-fitment purchases — i.e., Amazon's trust mechanism for parts fitment is largely data/warning-based (fitment widget, ACES data) rather than editorial "guaranteed fit" marketing copy. — [pcfitment.com](https://pcfitment.com/blog/pcfitments-seamless-fitment-helps-reduce-returns/)
+
+### Inferences
+- The gap between Rough Country's stated guarantees/free-shipping banner and 4 Wheel Parts' comparatively poor international Trustpilot scores suggests on-site trust badging and actual post-purchase trust/fulfillment experience can diverge significantly in this vertical — useful context for MYAKM: trust signals on the page should be backed by operational follow-through, not just badge design, since this is an area where the aftermarket-parts category visibly struggles (per the review data found).
+
+### Gaps
+- No confirmed detail on RealTruck's or Omix-ADA's trust-signal badges, warranty messaging, installation-guide content, or customer-photo/review widgets.
+- No confirmed detail on Amazon's on-page trust elements for automotive parts specifically (e.g., "Amazon's Choice," Prime two-day badge placement, Q&A section, verified-purchase review filtering) beyond the general, long-standing existence of its Part Finder/fitment tooling.
+- No data found on free-shipping dollar thresholds for any of the five sites (only Rough Country's banner text, which did not specify a threshold or minimum).
+
+## Visual/brand identity: palette, typography tone, marketing language, and Amazon comparison
+
+### Takeaway
+The only verified brand-identity data point across all five sites is RealTruck's 2021–2022 Tombras-led rebrand (new name, colors, fonts, iconography, photography, and an "In The Real" adventure-community campaign); everything else, including any Amazon-vs-specialty-retailer comparison on styling/trust-signal tradeoffs, is unconfirmed in this research pass and would need direct site inspection.
+
+### Cited Findings
+- RealTruck's 2021 rebrand (formerly "Truck Hero") was described by its own agency's case materials as covering "brand colours, fonts, iconography, photography" plus a logo lockup, with the explicit strategic aim of moving the company's positioning from a DTC/e-commerce seller to a lifestyle brand. — [LBB Online](https://www.lbbonline.com/news/parts-and-accessories-company-realtrucks-new-identity-brings-community-together), [Adweek](https://www.adweek.com/agencies/how-tombras-helped-realtruck-transition-from-dtc-to-lifestyle-brand/)
+- The name change itself (Truck Hero → RealTruck) was formally announced via trade press, with RealTruck.com described as having operated as Truck Hero's consumer e-commerce brand since 2015 before the 2021/2022 rebrand. — [WorkTruckOnline](https://www.worktruckonline.com/10176604/truck-hero-changes-name-to-realtruck-1), [AftermarketNews](https://www.aftermarketnews.com/?p=217178)
+
+### Inferences
+- None that can be responsibly stated for the Amazon-vs-specialty-retailer comparison specifically asked for in the brief; this requires direct visual inspection (color palettes, typography, ratings/Prime-badge/bought-together conversion mechanics) that this session could not perform.
+
+### Gaps
+- No verified color palette, typography choices, or specific marketing copy examples for RealTruck's current (2024–2026) live site, nor for Rough Country, Omix-ADA, or 4 Wheel Parts.
+- No data obtained at all on Amazon's visual/brand identity on automotive category pages, nor any sourced comparison of how Amazon's utilitarian design (ratings density, Prime badging, "bought together" modules) performs for trust/conversion versus the specialty off-road retailers' more editorial/lifestyle-driven design. This is arguably the single largest gap relative to the brief's explicit ask and should be prioritized if a follow-up research pass with working browser/network access is possible.
+- No industry UX-teardown article specific to off-road/truck/Jeep parts retail was found; the closest adjacent source (Baymard Institute's "Automotive Parts & Specialty" 10-site UX benchmark, and its annotated examples for Advance Auto Parts, CarParts.com, and TireRack.com) could not be accessed because baymard.com did not resolve in this session's network sandbox.
+
+## Overall research-process note for the report-writer
+
+This session's sandboxed network only permitted the built-in WebSearch tool's own result-fetching; every attempt to WebFetch an external URL — including all five target retailers/platforms, `web.archive.org` (suggested as a fallback in the brief), `baymard.com`, and even a general reference site (`quadratec.com`) — failed with `ENOTFOUND`, meaning the session had no working path to directly view any live or archived page. If another researcher or a follow-up pass has working browser/fetch access, re-running this assignment with actual page visits (or screenshots) to realtruck.com, roughcountry.com, 4wheelparts.com, omix-ada.com, and amazon.com's Jeep/automotive category pages would very likely surface most of the specific UI details (hero imagery/copy, grid columns, filter placement, card hover/badge/rating treatment, color palette) that this pass could not obtain from search snippets alone.
