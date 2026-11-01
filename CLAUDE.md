@@ -81,7 +81,7 @@
 4. لا عقدة أب تقريبية أبدًا. عند ظهور عقدة رسمية لاحقًا تُطبَّق على كل منتجات الفجوة ثم يُحذف وسما الفجوة.
 5. **مراجعة ربع سنوية** لتصنيف Shopify: أعد البحث عن كل مدخل فجوة؛ آخر مراجعة 2026-11-01.
 6. عدة عقد حرفية متساوية = تُحسم بالترتيب الحاسم في `docs/taxonomy-gap-protocol.md` (القسم 1، حالة D) وتُطبَّق فورًا بلا سؤال. السنوركل (25 منتجًا) فجوة مسجّلة؛ مبدّل الطاقة حُسم إلى `ha-11-20`.
-7. معروف: إضافة شرط وسم `gapsec:` لمجموعتَي vehicles-parts وsporting-goods رُفضت (Source is not shareable) — تُنفَّذ يدويًا من لوحة Shopify إن لزم.
+7. **تغطية المجموعات**: منتجات الفجوة لا فئة لها فلا تدخل مجموعة الفئة، فيُضاف لكل مجموعة قسم **مصدر ثانٍ** بشرط الوسم (`collectionUpdate(collection:{id, sourcesToCreate:[{source:{title, targetType:PRODUCTS, inclusion:{matchType:ANY, conditions:[{productTag:{matchType:ANY, relation:TAGGED_WITH, values:["gapsec:<قسم>"]}}]}}}]})`). تعديل المصدر الحالي مرفوض (Source is not shareable) فلا تحاوله. مطبَّق على vehicles-parts وsporting-goods (1 نوفمبر 2026)؛ أي قسم يحصل على أول منتج فجوة يُضاف له المصدر نفسه، والمجموعة تبقى غير منشورة.
 
 ## أدوات الاتصال
 Shopify: `mcp__Shopify__graphql_query` / `graphql_mutation` / `graphql_schema` (للمتجر jxawnn-99، myakm.com). الشيتات: `mcp__Google_Sheets__*`. المستندات: `mcp__Google_Docs__*` / `mcp__Google_Drive__*`. لا تحذف نهائيًا (`productDelete`) إلا بأمر صريح. إلغاء نشر مجموعة (`publishableUnpublish`) محجوب بسياسة أمان في أداة الـ MCP نفسها — يُنفَّذ يدويًا من لوحة Shopify عند الحاجة.
