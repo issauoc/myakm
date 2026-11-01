@@ -5,7 +5,8 @@
 ## المراجع الكاملة (Google Drive)
 - المرجع الموحد v1.3 + الملحقات 1.3.1–1.3.4: `1FuCNz6i0euias3qDdvurPTUmsURv_5znEt5w6ej60Uw`
 - تعليمات ChatGPT (نسخة اللصق) v1.2: `1QVeBSFTTkSvo9iNNCyG4LUt1gF_pmNQT8vM95HOFsI4`
-- عقد الكتالوج v1.7: `1rYYnNqy0k8VVea21gVqr5hrsWY21-rtB`
+- عقد الكتالوج v1.7.1 (الساري، 1 نوفمبر 2026): `1_dZiFn76bn5qGtkTcLyAxqGJTCW0XGLT` — النسخة v1.7 القديمة `1rYYnNqy0k8VVea21gVqr5hrsWY21-rtB` منسوخة
+- تعليمات ChatGPT القديمة (MYAKM_Ops_ChatGPT_Instructions.md) منسوخة؛ بديلها نسخة اللصق v1.2 أدناه، وملف المؤشر `1pWQqpa82_EEukGRTk2CPNC_spGR9SxjJ`
 - مسودة العقد v1.8 (قيد المراجعة): `1jGFY7OsHPdNGOFw63GSMrV3HmGxGTHzcluFCzCoARls`
 - شيت السجل (السياسات الدائمة، بطاقات العائلات، قالب الإدخال، الدفعات): `17STQGyitCyztpxIdREfnK2f6mKG__XBK34eDWrBC6Lc`
 - قالب الإدخال (شيت مستقل): `1gqEJk03yaO1dLzQfan1SpPygnNKP4iTkVwgj7_2jnjM`
