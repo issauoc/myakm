@@ -69,5 +69,17 @@
 الكارت الكامل (بلوكات `shipping_service`/`payment_service`/`returns_service` + أزرار الشراء المخصصة) يظهر فقط إذا `myakm.commerce_mode = retail_checkout` على المنتج (يُفحص في `snippets/myakm-retail-context.liquid`). **أي منتج تُنشئه بخطوات هذا الملف يحصل عليه تلقائيًا** لأن commerce_mode من الحقول الإلزامية أعلاه. لا علاقة لحالة DRAFT/ACTIVE بظهور الكارت — الحقل وحده يتحكم.
 تم تصحيح جذريًا في 1 نوفمبر 2026: 54 منتجًا قديمًا (إكسسوارات موتوسيكل، tag `accessories_motorcycle`) و3 منتجات عامة قديمة كانت بلا `commerce_mode` فأُضيف لها `retail_checkout`. **لا تزال استثناءات القرار الثابت 5 قائمة**: السيارات المستعملة (`templateSuffix=used-car` أو tag `usdcar`)، الموتوسيكلات الكاملة (مجموعة `new-motorcycles`)، والجملة (`commerce_mode=b2b_rfq` — لا تُستبدل أبدًا بـ retail_checkout). واتساب المنتج يتوجّه حسب `product.vendor` فقط (AKM/MG/ISA)، لا علاقة له بـ commerce_mode.
 
+## بروتوكول الفئات الناقصة وسجل الفجوات (مؤكد 1 نوفمبر 2026)
+1. **بحث إلزامي قبل إعلان أي فجوة**: الاسم الوظيفي بالإنجليزية + 2–3 مرادفات + فحص أبناء أقرب فرع (`childrenOf`). البحث بكلمة مترجمة واحدة لا يكفي (سبب خطأ سابق: ظنّ أن لا عقدة للونش/الشنكل/الكوريك وهي موجودة).
+2. وُجدت عقدة تطابق حرفيًا = تُطبَّق فورًا (الفئة + `cat:slug` + `publish_stage=CREATED`).
+3. لا عقدة حرفية = **فجوة حقيقية**: مسودة بلا فئة، `publish_stage=HELD`، ويُسجَّل في السجل:
+   - Metaobject من النوع `myakm_category_gap` (مدخل لكل نوع فجوة، مثل snorkel).
+   - حقل المنتج `myakm.category_gap` (metaobject_reference) يشير للمدخل.
+   - وسوم `gap:<slug>` و`gapsec:<handle القسم الرئيسي>` (هذان الوسمان استثناء مسموح من قاعدة الوسوم أعلاه).
+4. لا عقدة أب تقريبية أبدًا. عند ظهور عقدة رسمية لاحقًا تُطبَّق على كل منتجات الفجوة ثم يُحذف وسما الفجوة.
+5. **مراجعة ربع سنوية** لتصنيف Shopify: أعد البحث عن كل مدخل فجوة؛ آخر مراجعة 2026-11-01.
+6. حالات معلّقة: السنوركل (25 منتجًا) بانتظار قرار المالك؛ مبدّل الطاقة (عقدتان حرفيتان متساويتان ha-11-20 / el-7-15-14).
+7. معروف: إضافة شرط وسم `gapsec:` لمجموعتَي vehicles-parts وsporting-goods رُفضت (Source is not shareable) — تُنفَّذ يدويًا من لوحة Shopify إن لزم.
+
 ## أدوات الاتصال
 Shopify: `mcp__Shopify__graphql_query` / `graphql_mutation` / `graphql_schema` (للمتجر jxawnn-99، myakm.com). الشيتات: `mcp__Google_Sheets__*`. المستندات: `mcp__Google_Docs__*` / `mcp__Google_Drive__*`. لا تحذف نهائيًا (`productDelete`) إلا بأمر صريح. إلغاء نشر مجموعة (`publishableUnpublish`) محجوب بسياسة أمان في أداة الـ MCP نفسها — يُنفَّذ يدويًا من لوحة Shopify عند الحاجة.
