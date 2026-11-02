@@ -94,5 +94,8 @@
 6. بيانات التصميم تبقى محمية من أي تعديل آخر غير حذف المكرر المعتمد.
 طلب تأكيد الحذف هو الاستثناء الوحيد من قاعدة «لا أسئلة للمالك».
 
+## قالب المقالات `guide` (2 نوفمبر 2026)
+المواصفة الكاملة لـ ChatGPT: `docs/article-template-spec.md`. القالب في الثيم `189672751332` (`templateSuffix = "guide"`)، وحقول المقال في المساحة `myakm_article`. كل مقال جديد `isPublished:false` والنشر بأمر صريح. لا تعدّل المقالات القديمة (687) إلا بأمر صريح.
+
 ## أدوات الاتصال
 Shopify: `mcp__Shopify__graphql_query` / `graphql_mutation` / `graphql_schema` (للمتجر jxawnn-99، myakm.com). الشيتات: `mcp__Google_Sheets__*`. المستندات: `mcp__Google_Docs__*` / `mcp__Google_Drive__*`. لا تحذف نهائيًا (`productDelete`) إلا وفق «سياسة حذف المنتجات». إلغاء نشر مجموعة (`publishableUnpublish`) محجوب بسياسة أمان في أداة الـ MCP نفسها — يُنفَّذ يدويًا من لوحة Shopify عند الحاجة.
